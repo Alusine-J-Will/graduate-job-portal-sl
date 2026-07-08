@@ -90,7 +90,7 @@ $conn->begin_transaction();
 try {
     $userStmt = $conn->prepare('INSERT INTO users (full_name, email, phone, password, role, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)');
     $role = 'graduate';
-    $status = 'pending';
+    $status = 'active';
     $userStmt->bind_param('sssssss', $fullName, $email, $phone, $hashedPassword, $role, $status, $createdAt);
     $userStmt->execute();
 
