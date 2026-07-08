@@ -267,7 +267,30 @@ Completed:
 
 Authentication Module
 
-- Graduate Registration
+## session 10 Graduate Registration Module
+
+Completed: 8 July 2026.
+
+- Graduate registration interface
+- Client-side validation
+- Server-side validation
+- Password hashing
+- Duplicate email prevention
+- Database insertion into users table
+- Database insertion into graduates table
+- Transaction handling
+- Redirect to login page
+
+Issues encountered:
+
+- Incorrect primary key (id vs user_id)
+- Database column mismatch (first_name vs full_name)
+- Missing profile_completion column
+- Blank login page due to placeholder file
+
+Resolution:
+Updated backend to match the database schema and confirmed successful registration.
+
 - Employer Registration
 - Login
 - Forgot Password

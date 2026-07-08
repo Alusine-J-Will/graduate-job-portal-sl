@@ -10,7 +10,7 @@
 
 ## Phase 2 - Authentication
 
-- [ ] Graduate Registration
+- [x] Graduate Registration
 - [ ] Employer Registration
 - [ ] Login
 - [ ] Logout
