@@ -13,6 +13,25 @@ function sanitizeInput(string $input): string
 {
     return trim(htmlspecialchars($input, ENT_QUOTES, 'UTF-8'));
 }
+function displayFlashMessages(): void
+{
+    if (isset($_SESSION['success'])) {
+        echo displaySuccess($_SESSION['success']);
+        unset($_SESSION['success']);
+    }
+
+    if (isset($_SESSION['error'])) {
+        echo displayError($_SESSION['error']);
+        unset($_SESSION['error']);
+    }
+}
+
+function displayWarning(string $message): string
+{
+    return '<div class="alert alert-warning" role="alert">'
+        . sanitizeInput($message)
+        . '</div>';
+}
 
 /**
  * Redirect to a different URL.
