@@ -23,6 +23,11 @@ include '../includes/navbar.php';
                         unset($_SESSION['success']);
                     }
 
+                        if (isset($_SESSION['warning'])) {
+                        echo displayWarning($_SESSION['warning']);
+                        unset($_SESSION['warning']);
+                    }
+
                     if (isset($_SESSION['error'])) {
                         echo displayError($_SESSION['error']);
                         unset($_SESSION['error']);

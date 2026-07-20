@@ -12,4 +12,15 @@ if (!isLoggedIn()) {
     redirect(BASE_URL . 'auth/login.php');
 }
 
-// Role-based authorization checks will be added here in later development.
+/**
+ * Require a specific user role before allowing access.
+ *
+ * @param string $role
+ * @return void
+ */
+function requireRole(string $role): void
+{
+    if (!isset($_SESSION['role']) || $_SESSION['role'] !== $role) {
+        redirect(BASE_URL . 'auth/login.php');
+    }
+}

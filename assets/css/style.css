@@ -306,3 +306,136 @@ main {
         flex-basis: 100%;
     }
 }
+
+.dashboard-topbar {
+    background-color: rgba(255, 255, 255, 0.95);
+    border-bottom: 1px solid rgba(13, 110, 253, 0.12);
+    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04);
+}
+
+.topbar-brand {
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.topbar-brand:hover {
+    color: var(--primary);
+}
+
+.topbar-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.dashboard-topbar .avatar-sm {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+}
+
+.dashboard-topbar .avatar-placeholder {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: var(--secondary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dropdown-menu-end {
+    min-width: 220px;
+}
+
+.dashboard-search-form {
+    max-width: 520px;
+    width: 100%;
+}
+
+.dashboard-search-form .form-control {
+    min-width: 0;
+}
+
+@media (max-width: 991px) {
+    .dashboard-search-form {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 767px) {
+    .dashboard-topbar .dropdown-toggle .d-none.d-md-inline {
+        display: none !important;
+    }
+
+    .dashboard-topbar form {
+        width: 100%;
+    }
+
+    .dashboard-topbar form .btn {
+        width: auto;
+    }
+}
+
+/* Dashboard-specific styles */
+.profile-avatar {
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid rgba(13, 110, 253, 0.15);
+}
+
+.default-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), #3b8cff);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar {
+    transition: var(--transition);
+}
+
+.sidebar .nav-link.active,
+.sidebar .nav-link:hover {
+    background: rgba(13, 110, 253, 0.1);
+    color: var(--primary) !important;
+}
+
+.sidebar .nav-link {
+    color: var(--text) !important;
+    font-weight: 600;
+    padding: 0.85rem 1rem;
+    border-radius: 12px;
+}
+
+@media (max-width: 991px) {
+    .sidebar {
+        margin-bottom: 1rem;
+    }
+
+    .sidebar-collapsed .sidebar {
+        display: none;
+    }
+}
+
+@media (max-width: 767px) {
+    #sidebarToggle {
+        width: 100%;
+    }
+}

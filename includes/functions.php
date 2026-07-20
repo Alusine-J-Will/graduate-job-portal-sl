@@ -69,6 +69,26 @@ function hasRole(string $role): bool
 }
 
 /**
+ * Return a greeting message based on the current time of day.
+ *
+ * @param string $name
+ * @return string
+ */
+function getTimeOfDayGreeting(string $name): string
+{
+    $hour = (int) date('G');
+    if ($hour < 12) {
+        $greeting = 'Good Morning';
+    } elseif ($hour < 18) {
+        $greeting = 'Good Afternoon';
+    } else {
+        $greeting = 'Good Evening';
+    }
+
+    return sprintf('%s, %s 👋', $greeting, $name);
+}
+
+/**
  * Return formatted error markup.
  *
  * @param string $message

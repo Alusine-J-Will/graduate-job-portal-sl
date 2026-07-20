@@ -18,7 +18,7 @@
 
 ## Phase 3 - Graduate Module
 
-- [ ] Dashboard
+- [x] Dashboard
 - [ ] Profile
 - [ ] Upload CV
 - [ ] Search Jobs
