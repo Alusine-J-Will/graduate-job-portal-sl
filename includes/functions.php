@@ -89,6 +89,48 @@ function getTimeOfDayGreeting(string $name): string
 }
 
 /**
+ * Calculate graduate profile completion as a percentage.
+ *
+ * @param array $status
+ * @return int
+ */
+function calculateProfileCompletion(array $status): int
+{
+    $score = 0;
+    $score += !empty($status['personal']) ? 20 : 0;
+    $score += !empty($status['photo']) ? 10 : 0;
+    $score += !empty($status['location']) ? 10 : 0;
+    $score += !empty($status['bio']) ? 10 : 0;
+    $score += !empty($status['education']) ? 20 : 0;
+    $score += !empty($status['experience']) ? 10 : 0;
+    $score += !empty($status['skills']) ? 10 : 0;
+    $score += !empty($status['cv']) ? 10 : 0;
+
+    return min(100, max(0, $score));
+}
+
+/**
+ * Check whether a table column exists in the current database.
+ *
+ * @param mysqli $conn
+ * @param string $table
+ * @param string $column
+ * @return bool
+ */
+function columnExists(mysqli $conn, string $table, string $column): bool
+{
+    $sql = 'SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?';
+    $stmt = $conn->prepare($sql);
+    $dbName = DB_NAME;
+    $stmt->bind_param('sss', $dbName, $table, $column);
+    $stmt->execute();
+    $stmt->bind_result($count);
+    $stmt->fetch();
+    $stmt->close();
+    return $count > 0;
+}
+
+/**
  * Return formatted error markup.
  *
  * @param string $message
@@ -133,14 +175,157 @@ function formatDate(string $datetime): string
  */
 function uploadFile(array $file, string $destinationDir, array $allowedTypes, int $maxSize): array
 {
-    $result = [
-        'success' => false,
-        'message' => 'Upload functionality is not implemented yet.',
-        'path' => null,
+    if ($file['error'] !== UPLOAD_ERR_OK) {
+        return [
+            'success' => false,
+            'message' => 'File upload failed. Please try again.',
+            'path' => null,
+        ];
+    }
+
+    if ($file['size'] > $maxSize) {
+        return [
+            'success' => false,
+            'message' => 'File exceeds the maximum allowed size.',
+            'path' => null,
+        ];
+    }
+
+    $fileName = $file['name'];
+    $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+
+    if (!in_array($fileExtension, $allowedTypes, true)) {
+        return [
+            'success' => false,
+            'message' => 'Invalid file type. Please upload a supported format.',
+            'path' => null,
+        ];
+    }
+
+    if (!is_dir($destinationDir) && !mkdir($destinationDir, 0755, true)) {
+        return [
+            'success' => false,
+            'message' => 'Unable to create upload directory.',
+            'path' => null,
+        ];
+    }
+
+    $safeName = preg_replace('/[^a-zA-Z0-9-_\.]/', '_', pathinfo($fileName, PATHINFO_FILENAME));
+    $uniqueFileName = sprintf('%s_%s.%s', time(), $safeName, $fileExtension);
+    $destination = rtrim($destinationDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $uniqueFileName;
+
+    if (!move_uploaded_file($file['tmp_name'], $destination)) {
+        return [
+            'success' => false,
+            'message' => 'Unable to move the uploaded file.',
+            'path' => null,
+        ];
+    }
+
+    return [
+        'success' => true,
+        'message' => 'File uploaded successfully.',
+        'path' => $uniqueFileName,
+    ];
+}
+
+/**
+ * Return the graduate_id for the current user, or null if not found.
+ *
+ * @param mysqli $conn
+ * @param int $userId
+ * @return int|null
+ */
+function getGraduateIdByUserId(mysqli $conn, int $userId): ?int
+{
+    $stmt = $conn->prepare('SELECT graduate_id FROM graduates WHERE user_id = ? LIMIT 1');
+    $stmt->bind_param('i', $userId);
+    $stmt->execute();
+    $stmt->bind_result($graduateId);
+    $stmt->fetch();
+    $stmt->close();
+
+    return $graduateId !== null ? (int) $graduateId : null;
+}
+
+/**
+ * Refresh the graduate profile completion score and update the graduates table if supported.
+ *
+ * @param mysqli $conn
+ * @param int $userId
+ * @return void
+ */
+function refreshGraduateProfileCompletion(mysqli $conn, int $userId): void
+{
+    $graduateId = getGraduateIdByUserId($conn, $userId);
+    if (!$graduateId) {
+        return;
+    }
+
+    $educationCount = 0;
+    $experienceCount = 0;
+    $skillCount = 0;
+    $cv = null;
+    $profilePicture = null;
+    $fullName = null;
+    $email = null;
+    $phone = null;
+    $location = null;
+    $bio = null;
+
+    $stmt = $conn->prepare('SELECT full_name, email, phone FROM users WHERE user_id = ? LIMIT 1');
+    $stmt->bind_param('i', $userId);
+    $stmt->execute();
+    $stmt->bind_result($fullName, $email, $phone);
+    $stmt->fetch();
+    $stmt->close();
+
+    $stmt = $conn->prepare('SELECT location, bio, cv, profile_picture FROM graduates WHERE graduate_id = ? LIMIT 1');
+    $stmt->bind_param('i', $graduateId);
+    $stmt->execute();
+    $stmt->bind_result($location, $bio, $cv, $profilePicture);
+    $stmt->fetch();
+    $stmt->close();
+
+    $stmt = $conn->prepare('SELECT COUNT(*) FROM education WHERE graduate_id = ?');
+    $stmt->bind_param('i', $graduateId);
+    $stmt->execute();
+    $stmt->bind_result($educationCount);
+    $stmt->fetch();
+    $stmt->close();
+
+    $stmt = $conn->prepare('SELECT COUNT(*) FROM experience WHERE graduate_id = ?');
+    $stmt->bind_param('i', $graduateId);
+    $stmt->execute();
+    $stmt->bind_result($experienceCount);
+    $stmt->fetch();
+    $stmt->close();
+
+    $stmt = $conn->prepare('SELECT COUNT(*) FROM graduate_skills WHERE graduate_id = ?');
+    $stmt->bind_param('i', $graduateId);
+    $stmt->execute();
+    $stmt->bind_result($skillCount);
+    $stmt->fetch();
+    $stmt->close();
+
+    $completionStatus = [
+        'personal' => !empty($fullName) && !empty($email) && !empty($phone),
+        'photo' => !empty($profilePicture),
+        'location' => !empty($location),
+        'bio' => !empty($bio),
+        'education' => $educationCount > 0,
+        'experience' => $experienceCount > 0,
+        'skills' => $skillCount > 0,
+        'cv' => !empty($cv),
     ];
 
-    // Placeholder: add validation and move_uploaded_file handling here later.
-    return $result;
+    $completion = calculateProfileCompletion($completionStatus);
+    if (columnExists($conn, 'graduates', 'profile_completion')) {
+        $stmt = $conn->prepare('UPDATE graduates SET profile_completion = ? WHERE graduate_id = ?');
+        $stmt->bind_param('ii', $completion, $graduateId);
+        $stmt->execute();
+        $stmt->close();
+    }
 }
 
 /**

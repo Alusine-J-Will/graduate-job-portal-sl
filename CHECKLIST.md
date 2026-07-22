@@ -12,18 +12,18 @@
 
 - [x] Graduate Registration
 - [ ] Employer Registration
-- [ ] Login
-- [ ] Logout
-- [ ] Forgot Password
+- [x] Login
+- [x] Logout
+- [x] Forgot Password
 
 ## Phase 3 - Graduate Module
 
 - [x] Dashboard
-- [ ] Profile
-- [ ] Upload CV
-- [ ] Search Jobs
-- [ ] Apply for Job
-- [ ] Saved Jobs
+- [x] Profile
+- [x] Upload CV
+- [x] Search Jobs
+- [x] Apply for Job
+- [x] Saved Jobs
 
 ## Phase 4 - Employer Module
 

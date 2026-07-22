@@ -8,7 +8,21 @@ if (!isset($pageTitle)) {
 }
 
 $loggedInName = $_SESSION['full_name'] ?? 'User';
-$avatarUrl = isset($dashboardAvatar) && $dashboardAvatar ? BASE_URL . 'uploads/profile_photos/' . $dashboardAvatar : null;
+
+if (!isset($dashboardAvatar) || $dashboardAvatar === null) {
+    $dashboardAvatar = null;
+    if (isset($_SESSION['user_id'], $_SESSION['role']) && $_SESSION['role'] === 'graduate') {
+        $conn = $GLOBALS['conn'];
+        $stmt = $conn->prepare('SELECT profile_picture FROM graduates WHERE user_id = ? LIMIT 1');
+        $stmt->bind_param('i', $_SESSION['user_id']);
+        $stmt->execute();
+        $stmt->bind_result($dashboardAvatar);
+        $stmt->fetch();
+        $stmt->close();
+    }
+}
+
+$avatarUrl = !empty($dashboardAvatar) ? BASE_URL . 'uploads/profile_photos/' . htmlspecialchars($dashboardAvatar) : null;
 
 $logoLink = BASE_URL;
 if (isset($_SESSION['role'])) {

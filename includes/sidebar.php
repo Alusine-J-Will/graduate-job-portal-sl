@@ -23,6 +23,15 @@ function isActivePage(string $page): string
             <a class="nav-link <?php echo isActivePage('profile.php'); ?>" href="profile.php"><i class="fas fa-user me-2"></i>My Profile</a>
         </li>
         <li class="nav-item">
+            <a class="nav-link <?php echo isActivePage('education.php'); ?>" href="education.php"><i class="fas fa-graduation-cap me-2"></i>Education</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link <?php echo isActivePage('experience.php'); ?>" href="experience.php"><i class="fas fa-briefcase me-2"></i>Experience</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link <?php echo isActivePage('skills.php'); ?>" href="skills.php"><i class="fas fa-tags me-2"></i>Skills</a>
+        </li>
+        <li class="nav-item">
             <a class="nav-link <?php echo isActivePage('jobs.php'); ?>" href="jobs.php"><i class="fas fa-search me-2"></i>Search Jobs</a>
         </li>
         <li class="nav-item">
