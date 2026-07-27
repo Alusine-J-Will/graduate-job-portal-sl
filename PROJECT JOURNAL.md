@@ -350,4 +350,102 @@ Sidebar navigation working
 Responsive layout verified
 
 - Employer Dashboard
+  Module Completed
+
+Employer Registration & Employer Dashboard Module
+
+Objectives Achieved
+Completed Employer Registration page.
+Implemented Employer Registration processing.
+Added server-side validation.
+Added secure password hashing.
+Successfully inserted employer records into both the users and employers tables.
+Integrated employer login with the existing authentication system.
+Implemented Employer Dashboard.
+Implemented Company Profile page.
+Added Edit Company Profile functionality.
+Added role-based access control for employer pages.
+Connected employer dashboard navigation.
+Improved registration workflow.
+Added password strength meter.
+Added show/hide password functionality.
+Added live password validation.
+Added live email availability check.
+Corrected company verification status display.
+Ensured consistent UI and UX between Graduate and Employer registration pages.
+Bugs Encountered
+Bug 1
+
+Employer registration remained on the registration page after clicking Register.
+
+Cause
+
+Form was missing method="POST" and action.
+
+Solution
+
+Added the correct form method and action attributes.
+Bug 2
+
+Employer account was not created.
+
+Cause
+
+Registration process was using graduate registration logic.
+
+Solution
+
+Created a dedicated employer registration process.
+Inserted records into both the users and employers tables.
+Bug 3
+
+Employer login returned "Invalid email or password."
+
+Cause
+
+No employer record existed in the database.
+
+Solution
+
+Fixed the registration process and verified database inserts.
+Bug 4
+
+Company status displayed Pending.
+
+Cause
+
+Company verification status defaults to pending.
+
+Solution
+
+Updated the company verification status to approved for testing.
+Bug 5
+
+Employer Registration page lacked password strength meter and password visibility toggle.
+
+Solution
+
+Added password strength meter.
+Added show/hide password functionality.
+Added real-time password validation.
+Testing Performed
+✅ Employer Registration
+✅ Employer Login
+✅ Employer Dashboard
+✅ Company Profile
+✅ Edit Company Profile
+✅ Password Strength Meter
+✅ Password Visibility Toggle
+✅ Email Availability Check
+✅ Database Record Verification
+✅ Role-Based Access Control
+✅ Dashboard Navigation
+
+Lessons Learned
+Maintain separate registration logic for different user roles.
+Reuse shared UI components and validation logic to keep the experience consistent.
+Verify database inserts before troubleshooting authentication issues.
+Test every module thoroughly before moving on to the next stage.
+Small UI improvements can significantly improve usability.
+
 - Administrator Dashboard

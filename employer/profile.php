@@ -4,7 +4,7 @@ require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/auth_check.php';
 
 requireRole('employer');
-$pageTitle = 'Employer Dashboard';
+$pageTitle = 'Company Profile';
 
 $userId = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : 0;
 $conn = $GLOBALS['conn'];
@@ -31,27 +31,16 @@ $companySize = $employer['company_size'] ?? null;
 $companyWebsite = $employer['website'] ?? null;
 $companyDescription = $employer['description'] ?? null;
 $companyFounded = $employer['founded_year'] ?? null;
-$verificationStatus = $employer['verification_status'] ?? 'Pending';
+$verificationStatus = $employer['verification_status'] ?? 'Approved';
 $logoUrl = !empty($employer['logo']) ? BASE_URL . 'uploads/company_logos/' . htmlspecialchars($employer['logo']) : null;
 $jobTitle = $employer['job_title'] ?? null;
 $userName = $employer['full_name'] ?? 'Employer';
 $userEmail = $employer['email'] ?? '';
 $userPhone = $employer['phone'] ?? '';
 
-$companyProfileComplete = !empty($companyName) && !empty($companyLocation) && !empty($companyIndustry) && !empty($companyDescription);
-$completionPercentage = (int) round((count(array_filter([
-    !empty($companyName),
-    !empty($companyLocation),
-    !empty($companyIndustry),
-    !empty($companyDescription),
-    !empty($companyWebsite),
-    !empty($jobTitle),
-])) / 6) * 100);
-
 $jobCount = 0;
 $openJobs = 0;
 $applicationCount = 0;
-$recentJobs = [];
 
 if ($companyId) {
     $jobCountStmt = $conn->prepare('SELECT COUNT(*) FROM jobs WHERE company_id = ?');
@@ -80,22 +69,7 @@ if ($companyId) {
     $applicationStmt->bind_result($applicationCount);
     $applicationStmt->fetch();
     $applicationStmt->close();
-
-    $recentJobsStmt = $conn->prepare(
-        'SELECT title, status, location, deadline
-         FROM jobs
-         WHERE company_id = ?
-         ORDER BY created_at DESC
-         LIMIT 3'
-    );
-    $recentJobsStmt->bind_param('i', $companyId);
-    $recentJobsStmt->execute();
-    $recentJobsResult = $recentJobsStmt->get_result();
-    $recentJobs = $recentJobsResult->fetch_all(MYSQLI_ASSOC);
-    $recentJobsStmt->close();
 }
-
-$greeting = getTimeOfDayGreeting($userName);
 
 include __DIR__ . '/../includes/header.php';
 include __DIR__ . '/../includes/dashboard_topbar.php';
@@ -106,74 +80,24 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
         <div class="col-lg-3">
             <?php include __DIR__ . '/../includes/sidebar.php'; ?>
         </div>
+
         <div class="col-lg-9">
             <?php displayFlashMessages(); ?>
 
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
                 <div>
-                    <h1 class="h3 fw-bold mb-1"><?php echo htmlspecialchars($greeting); ?></h1>
-                    <p class="text-muted">Manage your company profile, open positions, and candidate interest.</p>
+                    <h1 class="h3 fw-bold mb-1">Company Profile</h1>
+                    <p class="text-muted">Review your company details and update your profile whenever your hiring needs change.</p>
                 </div>
                 <div class="d-flex gap-2 flex-wrap">
-                    <a href="profile.php" class="btn btn-outline-custom">Company Profile</a>
                     <a href="edit_profile.php" class="btn btn-primary-custom">Edit Profile</a>
-                </div>
-            </div>
-
-            <div class="row g-4 mb-4">
-                <div class="col-md-6 col-xl-3">
-                    <div class="card-ui p-4 bg-white h-100">
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <div>
-                                <p class="text-uppercase small text-muted mb-2">Open Jobs</p>
-                                <h2 class="h4 mb-0"><?php echo htmlspecialchars((string) $openJobs); ?></h2>
-                            </div>
-                            <i class="fas fa-briefcase fa-2x text-primary"></i>
-                        </div>
-                        <p class="text-muted mb-0">Live roles currently accepting applications.</p>
-                    </div>
-                </div>
-                <div class="col-md-6 col-xl-3">
-                    <div class="card-ui p-4 bg-white h-100">
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <div>
-                                <p class="text-uppercase small text-muted mb-2">Total Jobs</p>
-                                <h2 class="h4 mb-0"><?php echo htmlspecialchars((string) $jobCount); ?></h2>
-                            </div>
-                            <i class="fas fa-list fa-2x text-primary"></i>
-                        </div>
-                        <p class="text-muted mb-0">Total roles posted by your company.</p>
-                    </div>
-                </div>
-                <div class="col-md-6 col-xl-3">
-                    <div class="card-ui p-4 bg-white h-100">
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <div>
-                                <p class="text-uppercase small text-muted mb-2">Applications</p>
-                                <h2 class="h4 mb-0"><?php echo htmlspecialchars((string) $applicationCount); ?></h2>
-                            </div>
-                            <i class="fas fa-file-alt fa-2x text-primary"></i>
-                        </div>
-                        <p class="text-muted mb-0">Applications submitted to your open positions.</p>
-                    </div>
-                </div>
-                <div class="col-md-6 col-xl-3">
-                    <div class="card-ui p-4 bg-white h-100">
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <div>
-                                <p class="text-uppercase small text-muted mb-2">Profile Completion</p>
-                                <h2 class="h4 mb-0"><?php echo htmlspecialchars((string) $completionPercentage); ?>%</h2>
-                            </div>
-                            <i class="fas fa-chart-line fa-2x text-primary"></i>
-                        </div>
-                        <p class="text-muted mb-0">Build a stronger company profile for candidates.</p>
-                    </div>
+                    <a href="dashboard.php" class="btn btn-outline-custom">Back to Dashboard</a>
                 </div>
             </div>
 
             <div class="row g-4 mb-4">
                 <div class="col-lg-8">
-                    <div class="card-ui p-4 bg-white h-100">
+                    <div class="card-ui p-4 bg-white">
                         <div class="d-flex align-items-start gap-3 mb-4">
                             <?php if ($logoUrl): ?>
                                 <img src="<?php echo $logoUrl; ?>" alt="Company logo" class="company-logo rounded-circle">
@@ -183,8 +107,8 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                                 </div>
                             <?php endif; ?>
                             <div>
-                                <h2 class="h5 fw-semibold mb-1"><?php echo htmlspecialchars($companyName ?: 'Company Profile'); ?></h2>
-                                <p class="text-muted mb-1"><?php echo htmlspecialchars($companyIndustry ?: 'Industry not specified'); ?></p>
+                                <h2 class="h5 fw-semibold mb-1"><?php echo htmlspecialchars($companyName ?: 'No company profile yet'); ?></h2>
+                                <p class="text-muted mb-1"><?php echo htmlspecialchars($companyIndustry ?: 'Industry not available'); ?></p>
                                 <span class="badge bg-<?php echo $verificationStatus === 'Approved' ? 'success' : ($verificationStatus === 'Rejected' ? 'danger' : 'secondary'); ?>"><?php echo htmlspecialchars($verificationStatus); ?></span>
                             </div>
                         </div>
@@ -213,16 +137,16 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                             </div>
                             <div class="col-md-6">
                                 <div class="border rounded-4 p-3 bg-light">
-                                    <p class="text-uppercase small text-muted mb-2">Founded Year</p>
+                                    <p class="text-uppercase small text-muted mb-2">Founded</p>
                                     <p class="mb-0"><?php echo htmlspecialchars($companyFounded ?: 'Not available'); ?></p>
                                 </div>
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <h3 class="h6 fw-semibold mb-2">About the Company</h3>
+                            <h2 class="h6 fw-semibold mb-2">About the Company</h2>
                             <div class="border rounded-4 p-3 bg-light">
-                                <p class="mb-0"><?php echo nl2br(htmlspecialchars($companyDescription ?: 'Add a company description to help candidates learn more.')); ?></p>
+                                <p class="mb-0"><?php echo nl2br(htmlspecialchars($companyDescription ?: 'Add a company description to help candidates understand your mission and values.')); ?></p>
                             </div>
                         </div>
 
@@ -237,7 +161,7 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                             </div>
                             <div class="col-md-6">
                                 <p class="text-uppercase small text-muted mb-2">Hiring Contact</p>
-                                <p class="mb-0"><?php echo htmlspecialchars($jobTitle ?: 'Job title not added'); ?></p>
+                                <p class="mb-0"><?php echo htmlspecialchars($jobTitle ?: 'Job title not set'); ?></p>
                             </div>
                         </div>
                     </div>
@@ -245,51 +169,42 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
 
                 <div class="col-lg-4">
                     <div class="card-ui p-4 bg-white h-100">
-                        <h2 class="h5 fw-semibold mb-3">Quick Actions</h2>
-                        <div class="d-grid gap-2">
-                            <a href="edit_profile.php" class="btn btn-primary-custom">Update Company Profile</a>
-                            <a href="#" class="btn btn-outline-custom">Post a Job (Coming Soon)</a>
-                            <a href="#" class="btn btn-outline-custom">Review Applicants</a>
+                        <h2 class="h5 fw-semibold mb-3">Contact Details</h2>
+                        <div class="mb-3">
+                            <p class="text-uppercase small text-muted mb-2">Name</p>
+                            <p class="mb-0"><?php echo htmlspecialchars($userName); ?></p>
+                        </div>
+                        <div class="mb-3">
+                            <p class="text-uppercase small text-muted mb-2">Email</p>
+                            <p class="mb-0"><?php echo htmlspecialchars($userEmail); ?></p>
+                        </div>
+                        <div>
+                            <p class="text-uppercase small text-muted mb-2">Phone</p>
+                            <p class="mb-0"><?php echo htmlspecialchars($userPhone ?: 'Not added'); ?></p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="card-ui p-4 bg-white">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <div>
-                        <h2 class="h5 fw-semibold mb-1">Recent Job Postings</h2>
-                        <p class="text-muted mb-0">See your latest roles and status updates.</p>
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="card-ui p-4 bg-white h-100">
+                        <h2 class="h6 fw-semibold mb-3">Active Roles</h2>
+                        <p class="mb-0 text-muted"><?php echo htmlspecialchars((string) $openJobs); ?> open jobs</p>
                     </div>
-                    <a href="#" class="btn btn-sm btn-outline-custom">View All</a>
                 </div>
-
-                <?php if (empty($recentJobs)): ?>
-                    <p class="text-muted mb-0">No recent job postings yet. Create a job posting to see it listed here.</p>
-                <?php else: ?>
-                    <div class="table-responsive">
-                        <table class="table align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Title</th>
-                                    <th>Location</th>
-                                    <th>Status</th>
-                                    <th>Deadline</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($recentJobs as $job): ?>
-                                    <tr>
-                                        <td><?php echo htmlspecialchars($job['title']); ?></td>
-                                        <td><?php echo htmlspecialchars($job['location']); ?></td>
-                                        <td><?php echo htmlspecialchars($job['status']); ?></td>
-                                        <td><?php echo htmlspecialchars($job['deadline'] ?: 'N/A'); ?></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
+                <div class="col-lg-4">
+                    <div class="card-ui p-4 bg-white h-100">
+                        <h2 class="h6 fw-semibold mb-3">Total Posts</h2>
+                        <p class="mb-0 text-muted"><?php echo htmlspecialchars((string) $jobCount); ?> total jobs</p>
                     </div>
-                <?php endif; ?>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card-ui p-4 bg-white h-100">
+                        <h2 class="h6 fw-semibold mb-3">Applications</h2>
+                        <p class="mb-0 text-muted"><?php echo htmlspecialchars((string) $applicationCount); ?> total applications</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

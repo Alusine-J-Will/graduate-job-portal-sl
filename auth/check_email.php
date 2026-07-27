@@ -15,7 +15,7 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     exit;
 }
 
-$stmt = $conn->prepare('SELECT id FROM users WHERE email = ? LIMIT 1');
+$stmt = $conn->prepare('SELECT user_id FROM users WHERE email = ? LIMIT 1');
 $stmt->bind_param('s', $email);
 $stmt->execute();
 $result = $stmt->get_result();

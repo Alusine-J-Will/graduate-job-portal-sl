@@ -12,6 +12,10 @@ function debounce(callback, delay) {
 }
 
 function initRegistrationEnhancements() {
+    if (document.getElementById('registration-form') || document.getElementById('graduate-register-form')) {
+        return;
+    }
+
     const passwordInput = document.getElementById('password');
     const strengthFill = document.getElementById('password-strength-fill');
     const strengthLabel = document.getElementById('password-strength-label');
