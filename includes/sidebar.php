@@ -24,6 +24,12 @@ function isActivePage(string $page): string
                 <a class="nav-link <?php echo isActivePage('profile.php'); ?>" href="profile.php"><i class="fas fa-building me-2"></i>Company Profile</a>
             </li>
             <li class="nav-item">
+                <a class="nav-link <?php echo isActivePage('post_job.php'); ?>" href="post_job.php"><i class="fas fa-plus-circle me-2"></i>Post a Job</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link <?php echo isActivePage('manage_jobs.php'); ?>" href="manage_jobs.php"><i class="fas fa-tasks me-2"></i>Manage Jobs</a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link <?php echo isActivePage('edit_profile.php'); ?>" href="edit_profile.php"><i class="fas fa-edit me-2"></i>Edit Profile</a>
             </li>
             <li class="nav-item">

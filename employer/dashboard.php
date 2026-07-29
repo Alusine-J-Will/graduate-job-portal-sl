@@ -50,6 +50,7 @@ $completionPercentage = (int) round((count(array_filter([
 
 $jobCount = 0;
 $openJobs = 0;
+$draftJobs = 0;
 $applicationCount = 0;
 $recentJobs = [];
 
@@ -68,6 +69,14 @@ if ($companyId) {
     $openJobsStmt->bind_result($openJobs);
     $openJobsStmt->fetch();
     $openJobsStmt->close();
+
+    $draftJobsStmt = $conn->prepare('SELECT COUNT(*) FROM jobs WHERE company_id = ? AND status = ?');
+    $statusDraft = 'Draft';
+    $draftJobsStmt->bind_param('is', $companyId, $statusDraft);
+    $draftJobsStmt->execute();
+    $draftJobsStmt->bind_result($draftJobs);
+    $draftJobsStmt->fetch();
+    $draftJobsStmt->close();
 
     $applicationStmt = $conn->prepare(
         'SELECT COUNT(*)
@@ -149,24 +158,24 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                     <div class="card-ui p-4 bg-white h-100">
                         <div class="d-flex align-items-center justify-content-between mb-3">
                             <div>
-                                <p class="text-uppercase small text-muted mb-2">Applications</p>
-                                <h2 class="h4 mb-0"><?php echo htmlspecialchars((string) $applicationCount); ?></h2>
+                                <p class="text-uppercase small text-muted mb-2">Draft Jobs</p>
+                                <h2 class="h4 mb-0"><?php echo htmlspecialchars((string) $draftJobs); ?></h2>
                             </div>
                             <i class="fas fa-file-alt fa-2x text-primary"></i>
                         </div>
-                        <p class="text-muted mb-0">Applications submitted to your open positions.</p>
+                        <p class="text-muted mb-0">Roles saved as drafts and not yet published.</p>
                     </div>
                 </div>
                 <div class="col-md-6 col-xl-3">
                     <div class="card-ui p-4 bg-white h-100">
                         <div class="d-flex align-items-center justify-content-between mb-3">
                             <div>
-                                <p class="text-uppercase small text-muted mb-2">Profile Completion</p>
-                                <h2 class="h4 mb-0"><?php echo htmlspecialchars((string) $completionPercentage); ?>%</h2>
+                                <p class="text-uppercase small text-muted mb-2">Applications</p>
+                                <h2 class="h4 mb-0"><?php echo htmlspecialchars((string) $applicationCount); ?></h2>
                             </div>
-                            <i class="fas fa-chart-line fa-2x text-primary"></i>
+                            <i class="fas fa-file-alt fa-2x text-primary"></i>
                         </div>
-                        <p class="text-muted mb-0">Build a stronger company profile for candidates.</p>
+                        <p class="text-muted mb-0">Applications submitted to your open positions.</p>
                     </div>
                 </div>
             </div>
@@ -248,8 +257,8 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                         <h2 class="h5 fw-semibold mb-3">Quick Actions</h2>
                         <div class="d-grid gap-2">
                             <a href="edit_profile.php" class="btn btn-primary-custom">Update Company Profile</a>
-                            <a href="#" class="btn btn-outline-custom">Post a Job (Coming Soon)</a>
-                            <a href="#" class="btn btn-outline-custom">Review Applicants</a>
+                            <a href="post_job.php" class="btn btn-outline-custom">Post a Job</a>
+                            <a href="manage_jobs.php" class="btn btn-outline-custom">Manage Jobs</a>
                         </div>
                     </div>
                 </div>
@@ -261,7 +270,7 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                         <h2 class="h5 fw-semibold mb-1">Recent Job Postings</h2>
                         <p class="text-muted mb-0">See your latest roles and status updates.</p>
                     </div>
-                    <a href="#" class="btn btn-sm btn-outline-custom">View All</a>
+                    <a href="manage_jobs.php" class="btn btn-sm btn-outline-custom">View All</a>
                 </div>
 
                 <?php if (empty($recentJobs)): ?>

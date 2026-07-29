@@ -11,7 +11,7 @@
 ## Phase 2 - Authentication
 
 - [x] Graduate Registration
-- [ ] Employer Registration
+- [x] Employer Registration
 - [x] Login
 - [x] Logout
 - [x] Forgot Password
@@ -27,11 +27,11 @@
 
 ## Phase 4 - Employer Module
 
-- [ ] Dashboard
-- [ ] Company Profile
-- [ ] Post Job
-- [ ] Manage Jobs
-- [ ] View Applicants
+- [x] Dashboard
+- [x] Company Profile
+- [x] Post Job
+- [x] Manage Jobs
+- [x] View Applicants
 
 ## Phase 5 - Administrator
 

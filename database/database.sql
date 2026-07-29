@@ -208,8 +208,16 @@ CREATE TABLE users
                                         (100) DEFAULT NULL,
     experience_level VARCHAR
                                         (100) DEFAULT NULL,
+    work_mode VARCHAR
+                                        (100) DEFAULT NULL,
     salary VARCHAR
                                         (100) DEFAULT NULL,
+    vacancies INT DEFAULT NULL,
+    education_level VARCHAR
+                                        (100) DEFAULT NULL,
+    skills TEXT DEFAULT NULL,
+    responsibilities TEXT DEFAULT NULL,
+    benefits TEXT DEFAULT NULL,
     deadline DATE DEFAULT NULL,
     status ENUM
                                         ('Draft', 'Open', 'Closed', 'Expired') NOT NULL DEFAULT 'Draft',
