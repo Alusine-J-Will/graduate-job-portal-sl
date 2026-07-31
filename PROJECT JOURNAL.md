@@ -521,3 +521,22 @@ Testing Summary
 ✅ Recent Applications section now displays actual records
 
 - Administrator Dashboard
+
+-Future Enhancements
+Notification System
+Email Alerts
+Job Match Notifications
+Interview Scheduling
+SMS Integration
+Real-time Notification Bell
+Allow graduates to create professional CVs directly within the platform.
+
+AI-Based Job Recommendations
+
+Recommend jobs based on:
+
+Skills
+Education
+Experience
+Career interests
+Company Verification

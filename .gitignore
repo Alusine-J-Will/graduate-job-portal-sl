@@ -1,7 +1,7 @@
 vendor/
 node_modules/
 .env
-assets/uploads/
+uploads/
 logs/
 .DS_Store
 Thumbs.db
