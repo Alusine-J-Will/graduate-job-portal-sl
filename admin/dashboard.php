@@ -200,8 +200,8 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                 <h2 class="h5 fw-semibold mb-3">Quick Actions</h2>
                 <div class="d-flex flex-wrap gap-2">
                     <a href="graduates.php" class="btn btn-outline-custom">Manage Graduates</a>
-                    <a href="manage_employers.php" class="btn btn-outline-custom">Manage Employers</a>
-                    <a href="manage_jobs.php" class="btn btn-outline-custom">Manage Jobs</a>
+                    <a href="employers.php" class="btn btn-outline-custom">Manage Employers</a>
+                    <a href="jobs.php" class="btn btn-outline-custom">Manage Jobs</a>
                     <a href="manage_applications.php" class="btn btn-outline-custom">Manage Applications</a>
                     <a href="reports.php" class="btn btn-outline-custom">Reports</a>
                 </div>
