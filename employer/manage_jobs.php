@@ -149,9 +149,9 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                                         <td><?php echo htmlspecialchars((string) ($job['application_count'] ?? 0)); ?></td>
                                         <td><?php echo date('d M Y', strtotime($job['created_at'])); ?></td>
                                         <td>
-                                            <a href="view_job.php?job_id=<?php echo htmlspecialchars($job['job_id']); ?>" class="btn btn-sm btn-outline-custom me-1">View</a>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary me-1" disabled>Edit</button>
-                                            <button type="button" class="btn btn-sm btn-outline-danger" disabled>Delete</button>
+                                            <a href="job_details.php?job_id=<?php echo htmlspecialchars($job['job_id']); ?>" class="btn btn-sm btn-outline-custom me-1">View Details</a>
+                                            <a href="edit_job.php?job_id=<?php echo htmlspecialchars($job['job_id']); ?>" class="btn btn-sm btn-outline-secondary me-1">Edit</a>
+                                            <a href="delete_job.php?job_id=<?php echo htmlspecialchars($job['job_id']); ?>" class="btn btn-sm btn-outline-danger">Delete</a>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>

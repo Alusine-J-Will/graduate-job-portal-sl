@@ -27,6 +27,9 @@ function isActivePage(string $page): string
                 <a class="nav-link <?php echo isActivePage('post_job.php'); ?>" href="post_job.php"><i class="fas fa-plus-circle me-2"></i>Post a Job</a>
             </li>
             <li class="nav-item">
+                <a class="nav-link <?php echo isActivePage('applicants.php'); ?>" href="applicants.php"><i class="fas fa-users me-2"></i>Applicants</a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link <?php echo isActivePage('manage_jobs.php'); ?>" href="manage_jobs.php"><i class="fas fa-tasks me-2"></i>Manage Jobs</a>
             </li>
             <li class="nav-item">
@@ -55,7 +58,7 @@ function isActivePage(string $page): string
                 <a class="nav-link <?php echo isActivePage('jobs.php'); ?>" href="jobs.php"><i class="fas fa-search me-2"></i>Search Jobs</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link <?php echo isActivePage('applications.php'); ?>" href="applications.php"><i class="fas fa-file-alt me-2"></i>Applications</a>
+                <a class="nav-link <?php echo isActivePage('my_applications.php'); ?>" href="my_applications.php"><i class="fas fa-file-alt me-2"></i>Applications</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link <?php echo isActivePage('saved_jobs.php'); ?>" href="saved_jobs.php"><i class="fas fa-bookmark me-2"></i>Saved Jobs</a>

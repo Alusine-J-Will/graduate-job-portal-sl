@@ -29,6 +29,7 @@ $dashboardAvatar = $profilePicture;
 $location = !empty($graduate['location']) ? $graduate['location'] : 'Location not added.';
 $bio = !empty($graduate['bio']) ? $graduate['bio'] : 'Add a short bio to introduce yourself to employers.';
 $cv = !empty($graduate['cv']);
+$graduateId = isset($graduate['graduate_id']) ? (int) $graduate['graduate_id'] : null;
 $greeting = getTimeOfDayGreeting($user['full_name'] ?? 'Graduate');
 
 $completionFields = [
@@ -49,12 +50,57 @@ $stats = [
 ];
 
 $recentApplications = [];
+$applicationsCount = 0;
 
-$recommendedJobs = [
-    ['title' => 'Junior Web Developer', 'company' => 'Sierra Digital Labs', 'location' => 'Freetown', 'type' => 'Full-Time'],
-    ['title' => 'Customer Support Associate', 'company' => 'EcoTech Sierra Leone', 'location' => 'Makeni', 'type' => 'Part-Time'],
-    ['title' => 'Data Entry Officer', 'company' => 'National Savings Bank', 'location' => 'Bo', 'type' => 'Contract'],
-];
+$recentJobsStmt = $conn->prepare(
+    'SELECT j.job_id, j.title, c.company_name, j.location, j.employment_type, j.created_at
+     FROM jobs j
+     LEFT JOIN companies c ON j.company_id = c.company_id
+     WHERE j.status = ? AND (j.deadline IS NULL OR j.deadline >= CURDATE())
+     ORDER BY j.created_at DESC
+     LIMIT 5'
+);
+$statusOpen = 'Open';
+$recentJobsStmt->bind_param('s', $statusOpen);
+$recentJobsStmt->execute();
+$recentJobsResult = $recentJobsStmt->get_result();
+$recentJobs = $recentJobsResult->fetch_all(MYSQLI_ASSOC);
+$recentJobsStmt->close();
+
+$savedJobsCount = 0;
+if ($graduateId !== null) {
+    $applicationsCountStmt = $conn->prepare('SELECT COUNT(*) AS total_applications FROM applications WHERE graduate_id = ?');
+    $applicationsCountStmt->bind_param('i', $graduateId);
+    $applicationsCountStmt->execute();
+    $applicationsCountResult = $applicationsCountStmt->get_result();
+    $applicationsCount = (int) ($applicationsCountResult->fetch_assoc()['total_applications'] ?? 0);
+    $applicationsCountStmt->close();
+
+    $recentApplicationsStmt = $conn->prepare(
+        'SELECT a.application_date AS applied_date, a.status, j.title AS job_title, c.company_name AS company
+         FROM applications a
+         INNER JOIN jobs j ON a.job_id = j.job_id
+         LEFT JOIN companies c ON j.company_id = c.company_id
+         WHERE a.graduate_id = ?
+         ORDER BY a.application_date DESC
+         LIMIT 5'
+    );
+    $recentApplicationsStmt->bind_param('i', $graduateId);
+    $recentApplicationsStmt->execute();
+    $recentApplicationsResult = $recentApplicationsStmt->get_result();
+    $recentApplications = $recentApplicationsResult->fetch_all(MYSQLI_ASSOC);
+    $recentApplicationsStmt->close();
+
+    $savedJobsCountStmt = $conn->prepare('SELECT COUNT(*) AS total_saved FROM saved_jobs WHERE graduate_id = ?');
+    $savedJobsCountStmt->bind_param('i', $graduateId);
+    $savedJobsCountStmt->execute();
+    $savedJobsCountResult = $savedJobsCountStmt->get_result();
+    $savedJobsCount = (int) ($savedJobsCountResult->fetch_assoc()['total_saved'] ?? 0);
+    $savedJobsCountStmt->close();
+}
+
+$stats[0]['value'] = (string) $applicationsCount;
+$stats[1]['value'] = (string) $savedJobsCount;
 
 include __DIR__ . '/../includes/header.php';
 include __DIR__ . '/../includes/dashboard_topbar.php';
@@ -142,7 +188,7 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                     <div class="card-ui p-4 bg-white h-100">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h2 class="h5 fw-semibold mb-0">Recent Applications</h2>
-                            <a href="applications.php" class="btn btn-sm btn-outline-custom">View All</a>
+                            <a href="my_applications.php" class="btn btn-sm btn-outline-custom">View All</a>
                         </div>
                         <?php if (empty($recentApplications)): ?>
                             <p class="text-muted mb-0">No applications yet.</p>
@@ -188,22 +234,27 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                 <div class="col-lg-8">
                     <div class="card-ui p-4 bg-white h-100">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h2 class="h5 fw-semibold mb-0">Recommended Jobs</h2>
-                            <a href="jobs.php" class="btn btn-sm btn-outline-custom">Search Jobs</a>
+                            <h2 class="h5 fw-semibold mb-0">Recent Opportunities</h2>
+                            <a href="jobs.php" class="btn btn-sm btn-outline-custom">Browse Jobs</a>
                         </div>
                         <div class="row g-3">
-                            <?php foreach ($recommendedJobs as $job): ?>
-                                <div class="col-md-6">
-                                    <div class="border rounded-4 p-3 h-100">
-                                        <h3 class="h6 fw-semibold mb-2"><?php echo htmlspecialchars($job['title']); ?></h3>
-                                        <p class="text-muted mb-1"><?php echo htmlspecialchars($job['company']); ?></p>
-                                        <p class="small text-muted mb-3"><i class="fas fa-map-marker-alt me-2"></i><?php echo htmlspecialchars($job['location']); ?> • <?php echo htmlspecialchars($job['type']); ?></p>
-                                        <a href="#" class="btn btn-sm btn-outline-custom">View Details</a>
-                                    </div>
+                            <?php if (empty($recentJobs)): ?>
+                                <div class="col-12">
+                                    <p class="text-muted mb-0">No recent opportunities are available right now.</p>
                                 </div>
-                            <?php endforeach; ?>
+                            <?php else: ?>
+                                <?php foreach ($recentJobs as $job): ?>
+                                    <div class="col-md-6">
+                                        <div class="border rounded-4 p-3 h-100">
+                                            <h3 class="h6 fw-semibold mb-2"><?php echo htmlspecialchars($job['title']); ?></h3>
+                                            <p class="text-muted mb-1"><?php echo htmlspecialchars($job['company_name'] ?: 'Company not listed'); ?></p>
+                                            <p class="small text-muted mb-3"><i class="fas fa-map-marker-alt me-2"></i><?php echo htmlspecialchars($job['location']); ?> • <?php echo htmlspecialchars($job['employment_type'] ?: 'N/A'); ?></p>
+                                            <a href="job_details.php?job_id=<?php echo (int) $job['job_id']; ?>" class="btn btn-sm btn-outline-custom">View Details</a>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
                         </div>
-                        <p class="small text-muted mt-3 mb-0">Placeholder content ready for future database-driven job recommendations.</p>
                     </div>
                 </div>
 
@@ -211,10 +262,10 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                     <div class="card-ui p-4 bg-white h-100">
                         <h2 class="h5 fw-semibold mb-3">Quick Actions</h2>
                         <div class="d-grid gap-2">
-                            <a href="jobs.php" class="btn btn-outline-custom">Search Jobs</a>
-                            <a href="applications.php" class="btn btn-outline-custom">My Applications</a>
+                            <a href="jobs.php" class="btn btn-outline-custom">Browse Jobs</a>
+                            <a href="saved_jobs.php" class="btn btn-outline-custom">Saved Jobs</a>
+                            <a href="my_applications.php" class="btn btn-outline-custom">My Applications</a>
                             <a href="profile.php" class="btn btn-outline-custom">Complete Profile</a>
-                            <a href="profile.php" class="btn btn-outline-custom">Upload CV</a>
                         </div>
                     </div>
                 </div>
