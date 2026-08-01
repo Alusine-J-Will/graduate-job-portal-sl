@@ -97,8 +97,8 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                             <input type="text" class="form-control" id="grade" name="grade" value="<?php echo $grade; ?>">
                         </div>
                         <div class="col-12">
-                            <label class="form-label" for="description">Description</label>
-                            <textarea class="form-control" id="description" name="description" rows="4"><?php echo $description; ?></textarea>
+                            <label class="form-label" for="description">Description (Projects, Awards, Activities)</label>
+                            <textarea class="form-control" id="description" name="description" rows="4" placeholder="Projects during studies: E.g., E-learning Portal. President of Tech Club."><?php echo $description; ?></textarea>
                         </div>
                     </div>
                     <div class="mt-4 d-flex gap-2 flex-wrap">

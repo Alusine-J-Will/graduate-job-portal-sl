@@ -149,7 +149,7 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
 <div class="container-fluid py-4">
     <div class="row g-4">
         <div class="col-lg-3">
-            <?php include __DIR__ . '/../includes/sidebar.php'; ?>
+            <?php include __DIR__ . '/../includes/admin_sidebar.php'; ?>
         </div>
         <div class="col-lg-9">
             <?php displayFlashMessages(); ?>

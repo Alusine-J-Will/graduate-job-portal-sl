@@ -137,7 +137,7 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
 <div class="container-fluid py-4">
     <div class="row g-4">
         <div class="col-lg-3">
-            <?php include __DIR__ . '/../includes/sidebar.php'; ?>
+            <?php include __DIR__ . '/../includes/admin_sidebar.php'; ?>
         </div>
         <div class="col-lg-9">
             <?php displayFlashMessages(); ?>
@@ -199,11 +199,12 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
             <div class="card-ui p-4 bg-white mb-4">
                 <h2 class="h5 fw-semibold mb-3">Quick Actions</h2>
                 <div class="d-flex flex-wrap gap-2">
-                    <a href="graduates.php" class="btn btn-outline-custom">Manage Graduates</a>
-                    <a href="employers.php" class="btn btn-outline-custom">Manage Employers</a>
-                    <a href="jobs.php" class="btn btn-outline-custom">Manage Jobs</a>
-                    <a href="applications.php" class="btn btn-outline-custom">Manage Applications</a>
-                    <a href="reports.php" class="btn btn-outline-custom">Reports</a>
+                    <a href="reports.php" class="btn btn-outline-custom">View Reports</a>
+                    <a href="export_users.php" class="btn btn-outline-custom">Export Users</a>
+                    <a href="export_jobs.php" class="btn btn-outline-custom">Export Jobs</a>
+                    <a href="export_applications.php" class="btn btn-outline-custom">Export Applications</a>
+                    <a href="employers.php?verification_status=Pending" class="btn btn-outline-custom">Review Pending Employers</a>
+                    <a href="applications.php?status=Pending" class="btn btn-outline-custom">Review Pending Applications</a>
                 </div>
             </div>
 
