@@ -35,10 +35,10 @@
 
 ## Phase 5 - Administrator
 
-- [ ] Dashboard
-- [ ] Manage Users
-- [ ] Reports
-- [ ] Analytics
+- [x] Dashboard
+- [x] Manage Users
+- [x] Reports
+- [x] Analytics
 
 ## Phase 6 - Testing
 

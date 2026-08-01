@@ -144,7 +144,16 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                         <div class="card border-0 shadow-sm">
                             <div class="card-body">
                                 <h2 class="h6 fw-semibold mb-3">Skills</h2>
-                                <div class="text-muted" style="white-space: pre-wrap;"><?php echo nl2br(htmlspecialchars($job['skills'] ?: 'No skills provided.')); ?></div>
+                                <?php if (!empty($job['skills'])): ?>
+                                    <?php $skillItems = array_filter(array_map('trim', preg_split('/[,\n]+/', (string) $job['skills']))); ?>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <?php foreach ($skillItems as $skill): ?>
+                                            <span class="badge bg-light text-dark"><?php echo htmlspecialchars($skill); ?></span>
+                                        <?php endforeach; ?>
+                                    </div>
+                                <?php else: ?>
+                                    <p class="text-muted mb-0">No skills provided.</p>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>

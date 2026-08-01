@@ -20,6 +20,17 @@ if (!$companyId) {
     redirect('profile.php');
 }
 
+$rawSkills = $_POST['skills'] ?? '';
+if (is_array($rawSkills)) {
+    $skillItems = $rawSkills;
+} else {
+    $skillItems = preg_split('/[\n,]+/', (string) $rawSkills);
+}
+$skillItems = array_map('trim', $skillItems);
+$skillItems = array_values(array_filter($skillItems, static function ($skill): bool {
+    return $skill !== '';
+}));
+
 $postData = [
     'title' => trim($_POST['title'] ?? ''),
     'category_id' => trim($_POST['category_id'] ?? ''),
@@ -32,7 +43,7 @@ $postData = [
     'vacancies' => trim($_POST['vacancies'] ?? ''),
     'experience_level' => trim($_POST['experience_level'] ?? ''),
     'education_level' => trim($_POST['education_level'] ?? ''),
-    'skills' => trim($_POST['skills'] ?? ''),
+    'skills' => implode(', ', $skillItems),
     'description' => trim($_POST['description'] ?? ''),
     'responsibilities' => trim($_POST['responsibilities'] ?? ''),
     'requirements' => trim($_POST['requirements'] ?? ''),

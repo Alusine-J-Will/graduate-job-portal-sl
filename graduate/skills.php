@@ -58,7 +58,7 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                     <div class="row g-3 align-items-end">
                         <div class="col-md-8">
                             <label class="form-label" for="skill_name">Add Skill</label>
-                            <input type="text" class="form-control" id="skill_name" name="skill_name" placeholder="e.g. PHP, JavaScript" required>
+                            <input type="text" class="form-control" id="skill_name" name="skill_name" placeholder="e.g. PHP, JavaScript, Communication" required>
                         </div>
                         <div class="col-md-4">
                             <button type="submit" class="btn btn-primary-custom w-100">Add Skill</button>

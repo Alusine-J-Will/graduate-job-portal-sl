@@ -156,7 +156,8 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
 
                         <div class="col-12">
                             <label for="skills" class="form-label fw-semibold">Required Skills</label>
-                            <textarea class="form-control" id="skills" name="skills" rows="3" placeholder="List required skills" required><?php echo htmlspecialchars($formData['skills'] ?? ''); ?></textarea>
+                            <input type="text" class="form-control" id="skills" name="skills" value="<?php echo htmlspecialchars($formData['skills'] ?? ''); ?>" placeholder="Type a skill and press Enter" required>
+                            <div class="form-text">Add skills such as PHP, MySQL, HTML and press Enter to create tags.</div>
                             <div class="invalid-feedback">Please list the required skills.</div>
                         </div>
                         <div class="col-12">
@@ -198,10 +199,24 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
     </div>
 </div>
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css">
+<script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.min.js"></script>
 <script>
 (function () {
     'use strict';
     const form = document.getElementById('post-job-form');
+    const skillsInput = document.getElementById('skills');
+
+    if (skillsInput) {
+        new Tagify(skillsInput, {
+            delimiters: ',',
+            keepInvalidTags: false,
+            dropdown: {
+                enabled: 0
+            }
+        });
+    }
+
     form.addEventListener('submit', function (event) {
         if (!form.checkValidity()) {
             event.preventDefault();
