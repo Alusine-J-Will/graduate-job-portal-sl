@@ -49,7 +49,9 @@ if (isset($_SESSION['role'])) {
                         <span class="fw-bold">GradConnect SL</span>
                     </span>
                 </a>
-                <h1 class="topbar-title mb-0"><?php echo htmlspecialchars($pageTitle); ?></h1>
+                <div>
+                    <h1 class="topbar-title mb-0"><?php echo htmlspecialchars($pageTitle); ?></h1>
+                </div>
             </div>
             <div class="col-12 col-md-8">
                 <div class="d-flex flex-column flex-md-row align-items-stretch align-items-md-center justify-content-between gap-3">

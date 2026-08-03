@@ -10,10 +10,15 @@ function isActivePage(string $page): string
     return $currentPage === $page ? 'active' : '';
 }
 ?>
-<nav class="sidebar card-ui bg-white p-3">
-    <div class="sidebar-header mb-4">
-        <h5 class="fw-semibold mb-1"><?php echo isset($_SESSION['role']) && $_SESSION['role'] === 'employer' ? 'Employer Portal' : 'Graduate Portal'; ?></h5>
-        <p class="small text-muted mb-0"><?php echo isset($_SESSION['role']) && $_SESSION['role'] === 'employer' ? 'Company Dashboard' : 'Career Dashboard'; ?></p>
+<nav class="sidebar sidebar-portal">
+    <div class="sidebar-brand">
+        <span class="brand-mark">
+            <i class="fas <?php echo isset($_SESSION['role']) && $_SESSION['role'] === 'employer' ? 'fa-building' : 'fa-user-graduate'; ?>"></i>
+        </span>
+        <div>
+            <h5 class="sidebar-title mb-1"><?php echo isset($_SESSION['role']) && $_SESSION['role'] === 'employer' ? 'Employer Portal' : 'Graduate Portal'; ?></h5>
+            <p class="sidebar-subtitle mb-0"><?php echo isset($_SESSION['role']) && $_SESSION['role'] === 'employer' ? 'Company Dashboard' : 'Career Dashboard'; ?></p>
+        </div>
     </div>
     <ul class="nav flex-column gap-1">
         <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'employer'): ?>

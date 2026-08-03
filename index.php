@@ -98,6 +98,8 @@ $testimonials = [
 
 include 'includes/header.php';
 include 'includes/navbar.php';
+
+$applyUrl = BASE_URL . 'auth/login.php';
 ?>
 
 <main>
@@ -163,10 +165,10 @@ include 'includes/navbar.php';
                     <h2 class="fw-bold mb-2">Featured Jobs</h2>
                     <p class="text-muted mb-0">Recent opportunities suitable for ambitious graduates across Sierra Leone.</p>
                 </div>
-                <a href="#" class="btn btn-outline-primary">View All Jobs</a>
+                <a href="<?php echo BASE_URL; ?>graduate/jobs.php" class="btn btn-outline-primary">View All Jobs</a>
             </div>
             <div class="row g-4">
-                <?php foreach ($featuredJobs as $job): ?>
+                <?php foreach ($featuredJobs as $featuredIndex => $job): ?>
                     <div class="col-md-6 col-xl-4">
                         <div class="card border-0 shadow-sm rounded-4 h-100">
                             <div class="card-body p-4">
@@ -183,8 +185,8 @@ include 'includes/navbar.php';
                                     <li><i class="fas fa-calendar-alt me-2"></i>Deadline: <?php echo htmlspecialchars($job['deadline']); ?></li>
                                 </ul>
                                 <div class="d-flex gap-2">
-                                    <a href="#" class="btn btn-outline-primary btn-sm">View Details</a>
-                                    <a href="#" class="btn btn-primary btn-sm">Apply</a>
+                                    <a href="<?php echo BASE_URL; ?>auth/login.php" class="btn btn-outline-primary btn-sm">View Details</a>
+                                    <a href="<?php echo $applyUrl; ?>" class="btn btn-primary btn-sm">Apply</a>
                                 </div>
                             </div>
                         </div>

@@ -10,10 +10,10 @@ function isActiveAdminPage(string $page): string
     return $currentPage === $page ? 'active' : '';
 }
 ?>
-<nav class="sidebar card-ui bg-white p-3">
-    <div class="sidebar-header mb-4">
-        <h5 class="fw-semibold mb-1">Admin Panel</h5>
-        <p class="small text-muted mb-0">Administration Navigation</p>
+<nav class="sidebar sidebar-admin">
+    <div class="sidebar-brand">
+        <span class="brand-mark"><i class="fas fa-shield-alt"></i></span>
+        <h5 class="sidebar-title mb-0">Admin Panel</h5>
     </div>
     <ul class="nav flex-column gap-1">
         <li class="nav-item">
