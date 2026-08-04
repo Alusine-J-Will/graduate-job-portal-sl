@@ -1,6 +1,7 @@
 <?php
 require_once '../config/config.php';
 require_once '../includes/functions.php';
+require_once '../includes/email_helper.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     $_SESSION['error'] = 'Invalid request method.';
@@ -161,6 +162,17 @@ try {
     $employerStmt->close();
 
     $conn->commit();
+    sendApplicationEmail($email, $fullName, 'welcome', []);
+    // Notify admins about new employer registration and pending company
+    $notificationTitle = 'New Employer Registration';
+    $notificationMessage = 'A new employer account has been registered and may require review.';
+    notifyAdmins($conn, 'admin_employer', $notificationTitle, $notificationMessage, BASE_URL . 'admin/employers.php');
+
+    // If company defaults to Pending verification (by schema default), alert admins
+    $companyPendingTitle = 'Company Awaiting Approval';
+    $companyPendingMessage = 'A company profile is awaiting verification review.';
+    notifyAdmins($conn, 'admin_verification', $companyPendingTitle, $companyPendingMessage, BASE_URL . 'admin/employers.php');
+
     $_SESSION['success'] = 'Employer registration successful. Please login to continue.';
     redirect('login.php');
 } catch (Exception $e) {

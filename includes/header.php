@@ -16,5 +16,8 @@
     <link href="<?php echo BASE_URL; ?>assets/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/all.min.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/style.css">
+    <script>
+        window.BASE_URL = '<?php echo rtrim(BASE_URL, '/'); ?>/';
+    </script>
 </head>
 <body class="site-body">

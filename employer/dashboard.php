@@ -53,8 +53,12 @@ $openJobs = 0;
 $draftJobs = 0;
 $applicationCount = 0;
 $recentJobs = [];
+$recentNotifications = [];
+$unreadNotificationCount = 0;
 
 if ($companyId) {
+    ensureJobExpiryNotifications($conn, $companyId, $userId);
+
     $jobCountStmt = $conn->prepare('SELECT COUNT(*) FROM jobs WHERE company_id = ?');
     $jobCountStmt->bind_param('i', $companyId);
     $jobCountStmt->execute();
@@ -102,6 +106,26 @@ if ($companyId) {
     $recentJobsResult = $recentJobsStmt->get_result();
     $recentJobs = $recentJobsResult->fetch_all(MYSQLI_ASSOC);
     $recentJobsStmt->close();
+
+    $notificationStmt = $conn->prepare(
+        'SELECT notification_id, type, title, message, link, is_read, created_at
+         FROM notifications
+         WHERE user_id = ?
+         ORDER BY created_at DESC
+         LIMIT 5'
+    );
+    $notificationStmt->bind_param('i', $userId);
+    $notificationStmt->execute();
+    $notificationResult = $notificationStmt->get_result();
+    $recentNotifications = $notificationResult->fetch_all(MYSQLI_ASSOC);
+    $notificationStmt->close();
+
+    $unreadStmt = $conn->prepare('SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0');
+    $unreadStmt->bind_param('i', $userId);
+    $unreadStmt->execute();
+    $unreadStmt->bind_result($unreadNotificationCount);
+    $unreadStmt->fetch();
+    $unreadStmt->close();
 }
 
 $greeting = getTimeOfDayGreeting($userName);
@@ -261,6 +285,44 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                             <a href="manage_jobs.php" class="btn btn-outline-custom">Manage Jobs</a>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <div class="card-ui p-4 bg-white mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h2 class="h5 fw-semibold mb-1">Recent Notifications</h2>
+                        <p class="text-muted mb-0">Latest employer alerts and updates.</p>
+                    </div>
+                    <div>
+                        <?php if ((int) $unreadNotificationCount > 0): ?>
+                            <span class="badge bg-primary rounded-pill"><?php echo (int) $unreadNotificationCount; ?> unread</span>
+                        <?php else: ?>
+                            <span class="badge bg-secondary rounded-pill">No unread</span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <?php if (empty($recentNotifications)): ?>
+                    <p class="text-muted mb-0">No notifications yet. Important employer alerts will appear here.</p>
+                <?php else: ?>
+                    <div class="list-group list-group-flush">
+                        <?php foreach ($recentNotifications as $notification): ?>
+                            <a href="<?php echo !empty($notification['link']) ? htmlspecialchars($notification['link']) : BASE_URL . 'notifications/index.php'; ?>" class="list-group-item list-group-item-action<?php echo (int) $notification['is_read'] === 0 ? ' bg-light' : ''; ?>">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1 fw-semibold"><?php echo htmlspecialchars($notification['title']); ?></h6>
+                                        <p class="mb-1 text-muted small"><?php echo htmlspecialchars($notification['message']); ?></p>
+                                    </div>
+                                    <span class="badge bg-<?php echo (int) $notification['is_read'] === 0 ? 'primary' : 'secondary'; ?> rounded-pill small"><?php echo (int) $notification['is_read'] === 0 ? 'New' : 'Read'; ?></span>
+                                </div>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+
+                <div class="mt-3 text-end">
+                    <a href="notifications/index.php" class="btn btn-sm btn-outline-custom">View All</a>
                 </div>
             </div>
 

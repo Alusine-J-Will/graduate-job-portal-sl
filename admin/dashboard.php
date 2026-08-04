@@ -22,6 +22,31 @@ $stats = [
     'closed_jobs' => 0,
 ];
 
+// Ensure admin summary notifications are generated as needed
+ensureAdminSummaryNotifications($conn);
+
+// Fetch recent notifications for admin user
+$notifications = [];
+$unreadCount = 0;
+$notifStmt = $conn->prepare('SELECT notification_id, type, title, message, link, is_read, created_at FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 5');
+if ($notifStmt) {
+    $adminId = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : 0;
+    $notifStmt->bind_param('i', $adminId);
+    $notifStmt->execute();
+    $notifResult = $notifStmt->get_result();
+    $notifications = $notifResult->fetch_all(MYSQLI_ASSOC);
+    $notifStmt->close();
+
+    $countStmt = $conn->prepare('SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0');
+    if ($countStmt) {
+        $countStmt->bind_param('i', $adminId);
+        $countStmt->execute();
+        $countStmt->bind_result($unreadCount);
+        $countStmt->fetch();
+        $countStmt->close();
+    }
+}
+
 $graduateCountStmt = $conn->prepare('SELECT COUNT(*) FROM graduates');
 $graduateCountStmt->execute();
 $graduateCountStmt->bind_result($stats['graduates']);
@@ -266,6 +291,27 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                             <li class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center"><span>Open Jobs</span><strong><?php echo (int) $stats['open_jobs']; ?></strong></li>
                             <li class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center"><span>Closed Jobs</span><strong><?php echo (int) $stats['closed_jobs']; ?></strong></li>
                         </ul>
+                        <div class="mt-3">
+                            <h3 class="h6 fw-semibold mb-2">Recent Notifications <span class="badge bg-danger ms-2"><?php echo (int) $unreadCount; ?></span></h3>
+                            <?php if (empty($notifications)): ?>
+                                <p class="text-muted mb-0">No notifications.</p>
+                            <?php else: ?>
+                                <ul class="list-group list-group-flush">
+                                    <?php foreach ($notifications as $n): ?>
+                                        <li class="list-group-item px-0 py-2<?php echo $n['is_read'] ? '' : ' bg-light'; ?>">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div>
+                                                    <p class="mb-1 fw-semibold"><?php echo htmlspecialchars($n['title']); ?></p>
+                                                    <p class="small text-muted mb-0"><?php echo htmlspecialchars($n['message']); ?></p>
+                                                </div>
+                                                <span class="small text-muted"><?php echo date('d M Y', strtotime($n['created_at'])); ?></span>
+                                            </div>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            <?php endif; ?>
+                            <div class="mt-2 text-end"><a href="<?php echo BASE_URL; ?>notifications/index.php" class="btn btn-sm btn-outline-custom">View All</a></div>
+                        </div>
                     </div>
                 </div>
             </div>

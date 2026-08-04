@@ -48,7 +48,7 @@ if ($action === 'add') {
 } elseif ($action === 'update') {
     $educationId = isset($_POST['education_id']) ? (int) $_POST['education_id'] : 0;
     $stmt = $conn->prepare('UPDATE education SET institution = ?, degree = ?, field_of_study = ?, graduation_year = ?, grade = ? WHERE education_id = ? AND graduate_id = ?');
-    $stmt->bind_param('ssisssii', $institution, $degree, $fieldOfStudy, $graduationYear, $grade, $educationId, $graduateId);
+    $stmt->bind_param('sssssii', $institution, $degree, $fieldOfStudy, $graduationYear, $grade, $educationId, $graduateId);
     $success = $stmt->execute();
     $stmt->close();
     if ($success) {

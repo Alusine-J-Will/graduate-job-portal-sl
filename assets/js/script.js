@@ -108,4 +108,27 @@ function initRegistrationEnhancements() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', initRegistrationEnhancements);
+function fetchNotificationCount() {
+    const badge = document.getElementById('notification-count-badge');
+    if (!badge || typeof window.BASE_URL !== 'string') {
+        return;
+    }
+
+    fetch(`${window.BASE_URL}notifications/index.php?ajax=unread_count`, {
+        credentials: 'same-origin'
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            if (data && typeof data.unread_count === 'number') {
+                badge.textContent = data.unread_count;
+            }
+        })
+        .catch(() => {
+            // Keep existing count on failure.
+        });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    initRegistrationEnhancements();
+    fetchNotificationCount();
+});

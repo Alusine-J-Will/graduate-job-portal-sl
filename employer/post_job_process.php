@@ -136,17 +136,18 @@ if (!empty($errors)) {
     redirect('post_job.php');
 }
 
-$categoryStmt = $conn->prepare('SELECT category_id FROM job_categories WHERE category_id = ? LIMIT 1');
+$categoryStmt = $conn->prepare('SELECT category_id, category_name FROM job_categories WHERE category_id = ? LIMIT 1');
 $categoryStmt->bind_param('i', $postData['category_id']);
 $categoryStmt->execute();
-$categoryStmt->store_result();
-if ($categoryStmt->num_rows !== 1) {
-    $categoryStmt->close();
+$categoryResult = $categoryStmt->get_result();
+$category = $categoryResult->fetch_assoc();
+$categoryStmt->close();
+if (!$category) {
     $_SESSION['error'] = 'Selected job category is invalid.';
     $_SESSION['post_job_data'] = $postData;
     redirect('post_job.php');
 }
-$categoryStmt->close();
+$categoryName = $category['category_name'] ?? '';
 
 $salaryParts = [];
 if ($postData['min_salary'] !== '') {
@@ -189,8 +190,27 @@ try {
         throw new Exception('Unable to save job posting.');
     }
 
+    $jobId = $insertStmt->insert_id;
     $insertStmt->close();
     $conn->commit();
+
+    // Notify matching graduates if the job is immediately open.
+    if ($postData['status'] === 'Open') {
+        $job = [
+            'job_id' => $jobId,
+            'title' => $postData['title'],
+            'skills' => $postData['skills'],
+            'category_name' => $categoryName,
+            'education_level' => $postData['education_level'],
+            'experience_level' => $postData['experience_level'],
+        ];
+        notifyGraduatesOfMatchingJob($conn, $job);
+    }
+
+    // Notify admins about new job posting
+    $adminTitle = 'New Job Posted';
+    $adminMessage = 'A new job posting has been published on the platform.';
+    notifyAdmins($conn, 'admin_job', $adminTitle, $adminMessage, BASE_URL . 'admin/jobs.php');
 
     $_SESSION['success'] = 'Job posting created successfully.';
     redirect('manage_jobs.php');

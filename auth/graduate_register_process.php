@@ -1,6 +1,7 @@
 <?php
 require_once '../config/config.php';
 require_once '../includes/functions.php';
+require_once '../includes/email_helper.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     $_SESSION['error'] = 'Invalid request.';
@@ -111,6 +112,8 @@ try {
 
     $graduateStmt->close();
     $conn->commit();
+
+    sendApplicationEmail($email, $fullName, 'welcome', []);
 
     $_SESSION['success'] = 'Registration successful. Please login to continue.';
     redirect('login.php');

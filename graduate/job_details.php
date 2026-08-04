@@ -40,7 +40,7 @@ $job = $jobResult->fetch_assoc();
 $jobStmt->close();
 
 if (!$job) {
-    $_SESSION['error'] = 'The selected job could not be found.';
+    $_SESSION['error'] = 'Job posting is no longer available.';
     redirect('jobs.php');
 }
 
@@ -79,10 +79,9 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                             <button type="submit" class="btn btn-primary-custom">Save Job</button>
                         </form>
                     <?php endif; ?>
-                    <a href="apply_job.php?job_id=<?php echo (int)$job['job_id']; ?>"
-                        class="btn btn-primary-custom">
-                        Apply Now
-                    </a>                </div>
+                    <a href="apply_job.php?job_id=<?php echo (int)$job['job_id']; ?>" class="btn btn-primary-custom">Apply Now</a>
+                    <a href="flag_job.php?job_id=<?php echo (int) $job['job_id']; ?>" class="btn btn-outline-danger">Report Job</a>
+                </div>
 
                 <div class="row g-4">
                     <div class="col-lg-4">

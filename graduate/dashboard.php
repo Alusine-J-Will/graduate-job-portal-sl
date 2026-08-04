@@ -97,6 +97,17 @@ if ($graduateId !== null) {
     $savedJobsCountResult = $savedJobsCountStmt->get_result();
     $savedJobsCount = (int) ($savedJobsCountResult->fetch_assoc()['total_saved'] ?? 0);
     $savedJobsCountStmt->close();
+
+    $recommendedMatches = [];
+    $recommendedStmt = $conn->prepare('SELECT notification_id, message, link, is_read, created_at FROM notifications WHERE user_id = ? AND type = ? ORDER BY created_at DESC LIMIT 5');
+    if ($recommendedStmt) {
+        $type = 'job_match';
+        $recommendedStmt->bind_param('is', $userId, $type);
+        $recommendedStmt->execute();
+        $recommendedResult = $recommendedStmt->get_result();
+        $recommendedMatches = $recommendedResult->fetch_all(MYSQLI_ASSOC);
+        $recommendedStmt->close();
+    }
 }
 
 $stats[0]['value'] = (string) $applicationsCount;
@@ -181,6 +192,59 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                         </div>
                     </div>
                 <?php endforeach; ?>
+            </div>
+
+            <div class="card-ui p-4 bg-white mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h2 class="h5 fw-semibold mb-1">Recommended Jobs</h2>
+                        <p class="text-muted mb-0">Jobs that best match your profile and interests.</p>
+                    </div>
+                    <a href="notifications/index.php?filter=all" class="btn btn-sm btn-outline-custom">View Notifications</a>
+                </div>
+
+                <?php if (empty($recommendedMatches)): ?>
+                    <p class="text-muted mb-0">No recommended jobs are available yet. Update your profile to receive better matches.</p>
+                <?php else: ?>
+                    <div class="row g-3">
+                        <?php foreach ($recommendedMatches as $match): ?>
+                            <?php
+                                $jobId = null;
+                                $applyUrl = null;
+                                if (!empty($match['link'])) {
+                                    $resolvedLink = resolveNotificationLink($match['link']);
+                                    $query = parse_url($resolvedLink, PHP_URL_QUERY);
+                                    parse_str($query, $queryParams);
+                                    $jobId = isset($queryParams['job_id']) ? (int) $queryParams['job_id'] : (isset($queryParams['id']) ? (int) $queryParams['id'] : null);
+                                    $applyUrl = $jobId ? BASE_URL . 'graduate/apply_job.php?job_id=' . $jobId : null;
+                                }
+                                $isUnread = (int) ($match['is_read'] ?? 0) === 0;
+                            ?>
+                            <div class="col-md-6">
+                                <div class="border rounded-4 p-3 h-100<?php echo $isUnread ? ' bg-light' : ''; ?>">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div>
+                                            <span class="badge bg-primary me-2">Recommended</span>
+                                            <?php if ($isUnread): ?>
+                                                <span class="badge bg-success">New</span>
+                                            <?php endif; ?>
+                                        </div>
+                                        <small class="text-muted"><?php echo date('d M Y', strtotime($match['created_at'])); ?></small>
+                                    </div>
+                                    <p class="mb-3 fw-semibold"><?php echo sanitizeInput($match['message']); ?></p>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <?php if ($applyUrl): ?>
+                                            <a href="<?php echo htmlspecialchars($applyUrl); ?>" class="btn btn-sm btn-outline-custom">Quick Apply</a>
+                                        <?php endif; ?>
+                                        <?php if (!empty($match['link'])): ?>
+                                            <a href="<?php echo sanitizeInput(resolveNotificationLink($match['link'])); ?>" class="btn btn-sm btn-primary-custom">View Job</a>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
             </div>
 
             <div class="row g-4 mb-4">

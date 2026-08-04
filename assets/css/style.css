@@ -58,11 +58,12 @@ main {
     z-index: 1;
 }
 
-.navbar {
-    background-color: rgba(255, 255, 255, 0.92) !important;
-    backdrop-filter: blur(16px);
-    box-shadow: 0 22px 45px rgba(15, 23, 42, 0.08);
+.navbar.navbar-main {
+    background-color: rgba(255, 255, 255, 0.96) !important;
+    backdrop-filter: blur(18px);
+    box-shadow: 0 24px 46px rgba(15, 23, 42, 0.09);
     border-bottom: 1px solid rgba(37, 99, 235, 0.12);
+    padding: 1rem 0;
 }
 
 .navbar-brand {
@@ -70,22 +71,37 @@ main {
     color: var(--secondary);
 }
 
+.navbar-brand small {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
 .brand-mark {
-    width: 50px;
-    height: 50px;
+    width: 54px;
+    height: 54px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 16px;
+    border-radius: 18px;
     background: linear-gradient(135deg, var(--primary), #4f46e5);
     color: #ffffff;
     box-shadow: var(--shadow-light);
 }
 
+.navbar .navbar-toggler {
+    border: 1px solid rgba(37, 99, 235, 0.18);
+    border-radius: 12px;
+    padding: 0.35rem 0.5rem;
+}
+
+.navbar .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba%280, 28, 95, 0.85%29' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+}
+
 .navbar .nav-link {
     color: #475569 !important;
     font-weight: 600;
-    padding: 0.65rem 0.75rem;
+    padding: 0.8rem 0.85rem;
     transition: var(--transition);
 }
 
@@ -94,10 +110,20 @@ main {
     color: var(--primary) !important;
 }
 
+.navbar .nav-link.nav-link-secondary {
+    color: #475569 !important;
+    opacity: 0.85;
+}
+
+.navbar .nav-link.nav-link-secondary:hover {
+    color: var(--primary) !important;
+    opacity: 1;
+}
+
 .navbar .btn-primary {
     background: linear-gradient(135deg, var(--primary), #4f46e5);
     border: none;
-    box-shadow: 0 12px 28px rgba(37, 99, 235, 0.18);
+    box-shadow: 0 14px 30px rgba(37, 99, 235, 0.18);
 }
 
 .navbar .btn-primary:hover {
@@ -107,6 +133,23 @@ main {
 .btn {
     border-radius: 999px;
     transition: var(--transition);
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn-outline-primary {
+    color: var(--primary);
+    background-color: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(56, 189, 248, 0.22);
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus {
+    background-color: #eff6ff;
+    border-color: rgba(59, 130, 246, 0.35);
+    color: var(--primary);
 }
 
 .btn:hover {

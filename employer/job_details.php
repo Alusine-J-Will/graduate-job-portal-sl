@@ -20,7 +20,7 @@ if (!$companyId) {
     redirect('profile.php');
 }
 
-$jobId = $_GET['job_id'] ?? null;
+$jobId = $_GET['job_id'] ?? $_GET['id'] ?? null;
 if (!ctype_digit((string) $jobId)) {
     $_SESSION['error'] = 'Invalid job ID.';
     redirect('manage_jobs.php');

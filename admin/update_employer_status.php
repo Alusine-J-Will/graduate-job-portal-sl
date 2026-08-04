@@ -21,13 +21,31 @@ if ($userId <= 0 || !in_array($status, ['active', 'inactive'], true)) {
 }
 
 $conn = $GLOBALS['conn'];
-$updateStmt = $conn->prepare('UPDATE users SET status = ? WHERE user_id = ? AND role = ?');
+$currentStatusStmt = $conn->prepare('SELECT status FROM users WHERE user_id = ? AND role = ? LIMIT 1');
 $role = 'employer';
+$currentStatusStmt->bind_param('is', $userId, $role);
+$currentStatusStmt->execute();
+$currentStatusStmt->bind_result($existingStatus);
+$currentStatusStmt->fetch();
+$currentStatusStmt->close();
+
+$updateStmt = $conn->prepare('UPDATE users SET status = ? WHERE user_id = ? AND role = ?');
 $updateStmt->bind_param('sis', $status, $userId, $role);
 $updateStmt->execute();
 $updateStmt->close();
 
 if ($conn->affected_rows > 0) {
+    if ($existingStatus !== $status) {
+        $notification = generateNotification(
+            $userId,
+            'account',
+            'Account Status Updated',
+            'Your employer account status has been updated by the administrator.',
+            BASE_URL . 'notifications/index.php'
+        );
+        saveNotification($notification);
+    }
+
     $_SESSION['success'] = 'Employer account status updated successfully.';
 } else {
     $_SESSION['error'] = 'No changes were made.';

@@ -25,6 +25,9 @@ if (!isset($dashboardAvatar) || $dashboardAvatar === null) {
 $avatarUrl = !empty($dashboardAvatar) ? BASE_URL . 'uploads/profile_photos/' . htmlspecialchars($dashboardAvatar) : null;
 
 $logoLink = BASE_URL;
+$profilePath = BASE_URL . 'graduate/profile.php';
+$settingsPath = BASE_URL . 'graduate/settings.php';
+$notificationCount = 0;
 if (isset($_SESSION['role'])) {
     switch ($_SESSION['role']) {
         case 'graduate':
@@ -32,10 +35,25 @@ if (isset($_SESSION['role'])) {
             break;
         case 'employer':
             $logoLink = BASE_URL . 'employer/dashboard.php';
+            $profilePath = BASE_URL . 'employer/profile.php';
+            $settingsPath = BASE_URL . 'employer/settings.php';
             break;
         case 'admin':
             $logoLink = BASE_URL . 'admin/dashboard.php';
+            $profilePath = BASE_URL . 'admin/dashboard.php';
+            $settingsPath = BASE_URL . 'admin/settings.php';
             break;
+    }
+}
+
+if (isset($_SESSION['user_id']) && isset($conn)) {
+    $countStmt = $conn->prepare('SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0');
+    if ($countStmt !== false) {
+        $countStmt->bind_param('i', $_SESSION['user_id']);
+        $countStmt->execute();
+        $countStmt->bind_result($notificationCount);
+        $countStmt->fetch();
+        $countStmt->close();
     }
 }
 ?>
@@ -59,10 +77,11 @@ if (isset($_SESSION['role'])) {
                         <input class="form-control me-2" type="search" placeholder="Search jobs, companies..." aria-label="Search">
                         <button class="btn btn-primary-custom" type="submit">Search</button>
                     </form>
-                    <div class="d-flex align-items-center gap-2">
-                        <button class="btn btn-icon btn-light border" type="button" aria-label="Notifications">
+                    <div class="d-flex align-items-center gap-2 position-relative">
+                        <a href="<?php echo BASE_URL; ?>notifications/index.php" class="btn btn-icon btn-light border position-relative" aria-label="Notifications">
                             <i class="fas fa-bell"></i>
-                        </button>
+                            <span id="notification-count-badge" class="badge bg-primary rounded-pill position-absolute top-0 start-100 translate-middle"><?php echo (int) $notificationCount; ?></span>
+                        </a>
                         <span class="d-none d-md-inline text-muted"> Notifications</span>
                     </div>
                     <div class="dropdown">
@@ -77,10 +96,10 @@ if (isset($_SESSION['role'])) {
                             <span class="ms-2 d-none d-md-inline text-dark fw-semibold"><?php echo htmlspecialchars($loggedInName); ?></span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuButton">
-                            <li><a class="dropdown-item" href="profile.php">My Profile</a></li>
-                            <li><a class="dropdown-item" href="settings.php">Settings</a></li>
+                            <li><a class="dropdown-item" href="<?php echo $profilePath; ?>">My Profile</a></li>
+                            <li><a class="dropdown-item" href="<?php echo $settingsPath; ?>">Settings</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item logout-confirm" href="../auth/logout.php">Logout</a></li>
+                            <li><a class="dropdown-item logout-confirm" href="<?php echo BASE_URL; ?>auth/logout.php">Logout</a></li>
                         </ul>
                     </div>
                 </div>

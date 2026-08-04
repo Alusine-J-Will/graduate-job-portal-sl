@@ -41,6 +41,31 @@ $updateStmt->execute();
 $updateStmt->close();
 
 if ($conn->affected_rows > 0) {
+    $notificationMap = [
+        'Approved' => [
+            'type' => 'verification',
+            'title' => 'Company Approved',
+            'message' => 'Your company profile has been approved by the administrator.',
+        ],
+        'Rejected' => [
+            'type' => 'verification',
+            'title' => 'Company Verification Update',
+            'message' => 'Your company verification request was not approved. Please review your company information.',
+        ],
+    ];
+
+    if (isset($notificationMap[$verificationValue])) {
+        $notificationData = $notificationMap[$verificationValue];
+        $notification = generateNotification(
+            $userId,
+            $notificationData['type'],
+            $notificationData['title'],
+            $notificationData['message'],
+            BASE_URL . 'notifications/index.php'
+        );
+        saveNotification($notification);
+    }
+
     $_SESSION['success'] = 'Company verification status updated successfully.';
 } else {
     $_SESSION['error'] = 'No changes were made.';

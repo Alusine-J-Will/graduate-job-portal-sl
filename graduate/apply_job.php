@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/email_helper.php';
 require_once __DIR__ . '/../includes/auth_check.php';
 
 requireRole('graduate');
@@ -8,7 +9,7 @@ $pageTitle = 'Apply for Job';
 $conn = $GLOBALS['conn'];
 $userId = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : 0;
 
-$graduateStmt = $conn->prepare('SELECT graduate_id, cv FROM graduates WHERE user_id = ? LIMIT 1');
+$graduateStmt = $conn->prepare('SELECT g.graduate_id, g.cv, u.full_name FROM graduates g INNER JOIN users u ON g.user_id = u.user_id WHERE g.user_id = ? LIMIT 1');
 $graduateStmt->bind_param('i', $userId);
 $graduateStmt->execute();
 $graduateResult = $graduateStmt->get_result();
@@ -91,6 +92,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     $duplicateStmt->close();
 
+    $companyEmployerStmt = $conn->prepare(
+        'SELECT e.user_id
+         FROM employers e
+         INNER JOIN jobs j ON e.company_id = j.company_id
+         WHERE j.job_id = ?
+         LIMIT 1'
+    );
+    $companyEmployerStmt->bind_param('i', $jobId);
+    $companyEmployerStmt->execute();
+    $companyEmployerResult = $companyEmployerStmt->get_result();
+    $companyEmployer = $companyEmployerResult->fetch_assoc();
+    $companyEmployerStmt->close();
+
+    $employerUserId = isset($companyEmployer['user_id']) ? (int) $companyEmployer['user_id'] : 0;
+
     $conn->begin_transaction();
     try {
         $insertStmt = $conn->prepare('INSERT INTO applications (graduate_id, job_id, cv_path, cover_letter_path, cover_letter_text, status, application_date, updated_at) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())');
@@ -99,7 +115,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $coverLetterText = $coverLetter;
         $insertStmt->bind_param('iissss', $graduateId, $jobId, $cvPath, $coverLetterPath, $coverLetterText, $status);
         $insertStmt->execute();
+        $applicationId = $insertStmt->insert_id;
         $insertStmt->close();
+
+        if ($employerUserId > 0) {
+            $notification = generateNotification(
+                $employerUserId,
+                'new_application',
+                'New Applicant',
+                sprintf('A new applicant has applied for your %s position.', $job['title']),
+                BASE_URL . 'employer/application_details.php?application_id=' . $applicationId
+            );
+
+            if (!saveNotification($notification)) {
+                throw new Exception('Unable to save employer notification.');
+            }
+
+            $employerEmailStmt = $conn->prepare('SELECT email, full_name FROM users WHERE user_id = ? LIMIT 1');
+            if ($employerEmailStmt) {
+                $employerEmailStmt->bind_param('i', $employerUserId);
+                $employerEmailStmt->execute();
+                $employerEmailResult = $employerEmailStmt->get_result();
+                $employerAccount = $employerEmailResult->fetch_assoc();
+                $employerEmailStmt->close();
+
+                if (!empty($employerAccount['email'])) {
+                    sendApplicationEmail(
+                        $employerAccount['email'],
+                        $employerAccount['full_name'] ?? 'Employer',
+                        'new_application',
+                        ['job_title' => $job['title'], 'company_name' => $job['company_name'] ?? '']
+                    );
+                }
+            }
+        }
+
+        // After inserting application, check for high activity threshold and notify admins if needed
+        $countStmt = $conn->prepare('SELECT COUNT(*) FROM applications WHERE job_id = ?');
+        if ($countStmt) {
+            $countStmt->bind_param('i', $jobId);
+            $countStmt->execute();
+            $countStmt->bind_result($appCount);
+            $countStmt->fetch();
+            $countStmt->close();
+
+            if (isset($appCount) && (int) $appCount >= 20) {
+                // avoid duplicate admin alerts for same job
+                $notifType = 'admin_activity';
+                $title = 'High Application Activity';
+                $message = sprintf('The job "%s" has reached %d applications.', $job['title'], (int) $appCount);
+                $link = BASE_URL . 'admin/jobs.php?job_id=' . $jobId;
+                notifyAdmins($conn, $notifType, $title, $message, $link);
+            }
+        }
+
         $conn->commit();
 
         $_SESSION['success'] = 'Application submitted successfully.';
