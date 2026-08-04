@@ -40,6 +40,14 @@
 - [x] Reports
 - [x] Analytics
 
+- [x] Notification Center
+- [x] Notification Bell
+- [x] Job Application Notifications
+- [x] Employer Notifications
+- [x] Admin Notifications
+- [x] Job Match Notifications
+- [x] Email Notifications
+
 ## Phase 6 - Testing
 
 - [ ] Unit Testing
