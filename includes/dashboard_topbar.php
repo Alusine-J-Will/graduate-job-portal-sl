@@ -26,7 +26,7 @@ $avatarUrl = !empty($dashboardAvatar) ? BASE_URL . 'uploads/profile_photos/' . h
 
 $logoLink = BASE_URL;
 $profilePath = BASE_URL . 'graduate/profile.php';
-$settingsPath = BASE_URL . 'graduate/settings.php';
+$settingsPath = BASE_URL . 'graduate/profile.php';
 $notificationCount = 0;
 if (isset($_SESSION['role'])) {
     switch ($_SESSION['role']) {
@@ -36,12 +36,12 @@ if (isset($_SESSION['role'])) {
         case 'employer':
             $logoLink = BASE_URL . 'employer/dashboard.php';
             $profilePath = BASE_URL . 'employer/profile.php';
-            $settingsPath = BASE_URL . 'employer/settings.php';
+            $settingsPath = BASE_URL . 'employer/profile.php';
             break;
         case 'admin':
             $logoLink = BASE_URL . 'admin/dashboard.php';
             $profilePath = BASE_URL . 'admin/dashboard.php';
-            $settingsPath = BASE_URL . 'admin/settings.php';
+            $settingsPath = BASE_URL . 'admin/dashboard.php';
             break;
     }
 }

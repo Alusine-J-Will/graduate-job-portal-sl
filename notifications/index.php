@@ -25,11 +25,13 @@ if ($userId <= 0) {
 if (isset($_GET['ajax']) && $_GET['ajax'] === 'unread_count') {
     header('Content-Type: application/json');
     $cntStmt = $conn->prepare('SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0');
-    $cntStmt->bind_param('i', $userId);
-    $cntStmt->execute();
-    $cntStmt->bind_result($unreadCount);
-    $cntStmt->fetch();
-    $cntStmt->close();
+    if ($cntStmt !== false) {
+        $cntStmt->bind_param('i', $userId);
+        $cntStmt->execute();
+        $cntStmt->bind_result($unreadCount);
+        $cntStmt->fetch();
+        $cntStmt->close();
+    }
 
     echo json_encode(['unread_count' => (int) $unreadCount]);
     exit;
@@ -50,7 +52,8 @@ if ($filter === 'unread') {
 
 $stmt = $conn->prepare($countSql);
 if ($stmt === false) {
-    die('Database error');
+    $_SESSION['error'] = 'Unable to load notifications.';
+    redirect(BASE_URL . 'dashboard.php');
 }
 $stmt->bind_param('i', $userId);
 $stmt->execute();
@@ -71,7 +74,8 @@ $sql .= ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
 
 $stmt = $conn->prepare($sql);
 if ($stmt === false) {
-    die('Database error');
+    $_SESSION['error'] = 'Unable to load notifications.';
+    redirect(BASE_URL . 'dashboard.php');
 }
 $stmt->bind_param('iii', $userId, $perPage, $offset);
 $stmt->execute();
@@ -82,11 +86,13 @@ $stmt->close();
 
 // Unread count for bell
 $cntStmt = $conn->prepare('SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0');
-$cntStmt->bind_param('i', $userId);
-$cntStmt->execute();
-$cntStmt->bind_result($unreadCount);
-$cntStmt->fetch();
-$cntStmt->close();
+if ($cntStmt !== false) {
+    $cntStmt->bind_param('i', $userId);
+    $cntStmt->execute();
+    $cntStmt->bind_result($unreadCount);
+    $cntStmt->fetch();
+    $cntStmt->close();
+}
 
 ?>
 <?php include __DIR__ . '/../includes/header.php'; ?>

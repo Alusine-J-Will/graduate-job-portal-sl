@@ -50,9 +50,12 @@
 
 ## Phase 6 - Testing
 
-- [ ] Unit Testing
-- [ ] Integration Testing
-- [ ] User Acceptance Testing
+- [x] UI/UX Improvements
+- [x] QA Review
+- [x] Bug Fixes & Optimization
+- [x] Unit Testing
+- [x] Integration Testing
+- [x] User Acceptance Testing
 
 ## Phase 7 - Documentation
 

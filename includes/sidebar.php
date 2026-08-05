@@ -46,9 +46,6 @@ function isActivePage(string $page): string
             <li class="nav-item">
                 <a class="nav-link <?php echo isActivePage('employer/edit_profile.php'); ?>" href="<?php echo BASE_URL; ?>employer/edit_profile.php"><i class="fas fa-edit me-2"></i>Edit Profile</a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link <?php echo isActivePage('employer/settings.php'); ?>" href="<?php echo BASE_URL; ?>employer/settings.php"><i class="fas fa-cog me-2"></i>Settings</a>
-            </li>
         <?php else: ?>
             <li class="nav-item">
                 <a class="nav-link <?php echo isActivePage('graduate/dashboard.php'); ?>" href="<?php echo BASE_URL; ?>graduate/dashboard.php"><i class="fas fa-th-large me-2"></i>Dashboard</a>
@@ -76,9 +73,6 @@ function isActivePage(string $page): string
             </li>
             <li class="nav-item">
                 <a class="nav-link <?php echo isActivePage('notifications/index.php'); ?>" href="<?php echo BASE_URL; ?>notifications/index.php"><i class="fas fa-bell me-2"></i>Notifications</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link <?php echo isActivePage('graduate/settings.php'); ?>" href="<?php echo BASE_URL; ?>graduate/settings.php"><i class="fas fa-cog me-2"></i>Settings</a>
             </li>
         <?php endif; ?>
         <li class="nav-item mt-3">

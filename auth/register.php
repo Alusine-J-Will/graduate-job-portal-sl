@@ -39,7 +39,7 @@ include '../includes/navbar.php';
                         </div>
                     </div>
 
-                    <form id="registration-form" class="mt-3" method="post" action="graduate_register_process.php" novalidate>
+                    <form id="registration-form" class="mt-3" method="post" action="register_process.php" novalidate>
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="role" class="form-label fw-semibold">Account type</label>

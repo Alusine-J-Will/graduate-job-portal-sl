@@ -274,18 +274,22 @@ function refreshGraduateProfileCompletion(mysqli $conn, int $userId): void
     $bio = null;
 
     $stmt = $conn->prepare('SELECT full_name, email, phone FROM users WHERE user_id = ? LIMIT 1');
-    $stmt->bind_param('i', $userId);
-    $stmt->execute();
-    $stmt->bind_result($fullName, $email, $phone);
-    $stmt->fetch();
-    $stmt->close();
+    if ($stmt !== false) {
+        $stmt->bind_param('i', $userId);
+        $stmt->execute();
+        $stmt->bind_result($fullName, $email, $phone);
+        $stmt->fetch();
+        $stmt->close();
+    }
 
     $stmt = $conn->prepare('SELECT location, bio, cv, profile_picture FROM graduates WHERE graduate_id = ? LIMIT 1');
-    $stmt->bind_param('i', $graduateId);
-    $stmt->execute();
-    $stmt->bind_result($location, $bio, $cv, $profilePicture);
-    $stmt->fetch();
-    $stmt->close();
+    if ($stmt !== false) {
+        $stmt->bind_param('i', $graduateId);
+        $stmt->execute();
+        $stmt->bind_result($location, $bio, $cv, $profilePicture);
+        $stmt->fetch();
+        $stmt->close();
+    }
 
     $stmt = $conn->prepare('SELECT COUNT(*) FROM education WHERE graduate_id = ?');
     $stmt->bind_param('i', $graduateId);

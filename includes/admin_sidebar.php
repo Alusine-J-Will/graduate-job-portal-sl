@@ -46,9 +46,6 @@ function isActiveAdminPage(string $page): string
         <li class="nav-item">
             <a class="nav-link <?php echo isActiveAdminPage('notifications/index.php'); ?>" href="<?php echo BASE_URL; ?>notifications/index.php"><i class="fas fa-bell me-2"></i>Notifications</a>
         </li>
-        <li class="nav-item">
-            <a class="nav-link <?php echo isActiveAdminPage('settings.php'); ?>" href="<?php echo BASE_URL; ?>admin/settings.php"><i class="fas fa-cog me-2"></i>Settings</a>
-        </li>
         <li class="nav-item mt-3">
             <a class="nav-link text-danger fw-semibold logout-confirm" href="<?php echo BASE_URL; ?>auth/logout.php"><i class="fas fa-sign-out-alt me-2"></i>Logout</a>
         </li>
