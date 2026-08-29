@@ -43,5 +43,14 @@ if (!defined('SMTP_AUTH')) {
 }
 
 if (!defined('APP_URL')) {
-    define('APP_URL', rtrim(BASE_URL, '/'));
+    $configuredAppUrl = trim((string) getenv('GRADCONNECT_APP_URL'));
+    if ($configuredAppUrl !== '') {
+        $applicationUrl = rtrim($configuredAppUrl, '/');
+    } else {
+        $requestScheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $requestHost = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $applicationUrl = $requestScheme . '://' . $requestHost . rtrim(BASE_URL, '/');
+    }
+
+    define('APP_URL', $applicationUrl);
 }

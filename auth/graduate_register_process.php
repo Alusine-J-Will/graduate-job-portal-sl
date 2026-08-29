@@ -85,14 +85,17 @@ $stmt->close();
 $fullName = trim($firstName . ' ' . $lastName);
 $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 $createdAt = date('Y-m-d H:i:s');
+$verificationToken = bin2hex(random_bytes(32));
+$verificationTokenHash = hash('sha256', $verificationToken);
+$verificationExpires = date('Y-m-d H:i:s', time() + 86400);
 
 $conn->begin_transaction();
 
 try {
-    $userStmt = $conn->prepare('INSERT INTO users (full_name, email, phone, password, role, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)');
+    $userStmt = $conn->prepare('INSERT INTO users (full_name, email, phone, password, role, status, email_verified, email_verification_token, email_verification_expires, email_verification_sent_at, created_at) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)');
     $role = 'graduate';
     $status = 'active';
-    $userStmt->bind_param('sssssss', $fullName, $email, $phone, $hashedPassword, $role, $status, $createdAt);
+    $userStmt->bind_param('ssssssssss', $fullName, $email, $phone, $hashedPassword, $role, $status, $verificationTokenHash, $verificationExpires, $createdAt, $createdAt);
     $userStmt->execute();
 
     if ($userStmt->affected_rows !== 1) {
@@ -113,9 +116,12 @@ try {
     $graduateStmt->close();
     $conn->commit();
 
-    sendApplicationEmail($email, $fullName, 'welcome', []);
+    sendApplicationEmail($email, $fullName, 'email_verification', [
+        'account_type' => 'graduate account',
+        'action_url' => APP_URL . '/auth/verify_email.php?token=' . urlencode($verificationToken),
+    ]);
 
-    $_SESSION['success'] = 'Registration successful. Please login to continue.';
+    $_SESSION['success'] = 'Registration successful. Please check your email and click the verification link to activate your email address.';
     redirect('login.php');
 } catch (Exception $e) {
     $conn->rollback();

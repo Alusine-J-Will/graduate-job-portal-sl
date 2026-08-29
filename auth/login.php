@@ -65,6 +65,9 @@ include '../includes/navbar.php';
                         <p class="text-center mt-3 mb-0 text-muted">
                             Don't have an account? <a href="graduate_register.php" class="text-decoration-none fw-semibold">Register</a>
                         </p>
+                        <p class="text-center mt-2 mb-0">
+                            <a href="resend_verification.php" class="small text-decoration-none">Resend verification email</a>
+                        </p>
                     </form>
                 </div>
             </div>

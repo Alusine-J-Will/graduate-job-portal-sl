@@ -42,6 +42,10 @@ CREATE TABLE users
     ('graduate', 'employer', 'admin') NOT NULL,
     status ENUM
     ('pending', 'active', 'inactive') NOT NULL DEFAULT 'pending',
+    email_verified TINYINT(1) NOT NULL DEFAULT 0,
+    email_verification_token CHAR(64) DEFAULT NULL,
+    email_verification_expires DATETIME DEFAULT NULL,
+    email_verification_sent_at DATETIME DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON
     UPDATE CURRENT_TIMESTAMP,

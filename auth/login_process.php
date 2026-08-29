@@ -28,7 +28,7 @@ if (!empty($errors)) {
 
 $conn = $GLOBALS['conn'];
 
-$stmt = $conn->prepare('SELECT user_id, full_name, email, password, role, status FROM users WHERE email = ? LIMIT 1');
+$stmt = $conn->prepare('SELECT user_id, full_name, email, password, role, status, email_verified FROM users WHERE email = ? LIMIT 1');
 $stmt->bind_param('s', $email);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -44,6 +44,11 @@ $stmt->close();
 
 if (!password_verify($password, $user['password'])) {
     $_SESSION['error'] = 'Invalid email or password.';
+    redirect('login.php');
+}
+
+if ($user['role'] !== 'admin' && (int) ($user['email_verified'] ?? 0) !== 1) {
+    $_SESSION['warning'] = 'Please verify your email address before logging in.';
     redirect('login.php');
 }
 

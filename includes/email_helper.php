@@ -45,7 +45,8 @@ if (!function_exists('sendHtmlEmail')) {
                 $mail->isHTML(true);
                 $mail->Subject = $subject;
                 $mail->Body = buildEmailTemplate($subject, $message, $actionUrl);
-                $mail->AltBody = strip_tags($message);
+                $mail->AltBody = strip_tags($message)
+                    . ($actionUrl ? "\n\nVerification link: " . $actionUrl : '');
                 $mail->send();
                 return true;
             } catch (Throwable $e) {
@@ -70,6 +71,9 @@ if (!function_exists('buildEmailTemplate')) {
         $safeMessage = nl2br(htmlspecialchars($message, ENT_QUOTES, 'UTF-8'));
         $safeActionUrl = htmlspecialchars($actionUrl ?: APP_URL, ENT_QUOTES, 'UTF-8');
         $actionLabel = $actionUrl ? 'Verify My Email' : 'Open GradConnect SL';
+        $fallbackUrl = $actionUrl
+            ? '<p style="margin:0;color:#4b5563;font-size:13px;line-height:1.5;">If the button does not work, copy and paste this link into your browser:<br><a href="%s" style="color:#0d6efd;word-break:break-all;">%s</a></p>'
+            : '';
 
         return sprintf(
             '<!DOCTYPE html>
@@ -92,6 +96,7 @@ if (!function_exists('buildEmailTemplate')) {
                                     <p style="margin:0 0 24px;">
                                         <a href="%s" style="display:inline-block;padding:12px 20px;background:#0d6efd;color:#ffffff;text-decoration:none;border-radius:8px;">%s</a>
                                     </p>
+                                    %s
                                 </td>
                             </tr>
                             <tr>
@@ -108,7 +113,8 @@ if (!function_exists('buildEmailTemplate')) {
             $safeSubject,
             $safeMessage,
             $safeActionUrl,
-            $actionLabel
+            $actionLabel,
+            $actionUrl ? sprintf($fallbackUrl, $safeActionUrl, $safeActionUrl) : ''
         );
     }
 }

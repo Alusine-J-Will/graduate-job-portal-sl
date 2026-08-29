@@ -2,10 +2,10 @@
 
 # Technical Documentation
 
-Student Name: [Your Name]
-Department: [Department Name]
-University: [University Name]
-Academic Year: [Academic Year]
+Student Name: [Alusine J. Will]
+Department: [Computer Science]
+University: [University of Management and Technology]
+Academic Year: [2026]
 
 ---
 

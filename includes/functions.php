@@ -3,6 +3,8 @@
  * Reusable helper functions for the Graduate Job Portal.
  */
 
+require_once __DIR__ . '/email_helper.php';
+
 /**
  * Sanitize text input for safe output.
  *

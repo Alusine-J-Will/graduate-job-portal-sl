@@ -117,16 +117,19 @@ $duplicateCompanyStmt->close();
 
 $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 $createdAt = date('Y-m-d H:i:s');
+$verificationToken = bin2hex(random_bytes(32));
+$verificationTokenHash = hash('sha256', $verificationToken);
+$verificationExpires = date('Y-m-d H:i:s', time() + 86400);
 
 $conn->begin_transaction();
 
 try {
     $userStmt = $conn->prepare(
-        'INSERT INTO users (full_name, email, phone, password, role, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)' 
+        'INSERT INTO users (full_name, email, phone, password, role, status, email_verified, email_verification_token, email_verification_expires, email_verification_sent_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?)'
     );
     $role = 'employer';
     $status = 'active';
-    $userStmt->bind_param('ssssssss', $fullName, $email, $phone, $hashedPassword, $role, $status, $createdAt, $createdAt);
+    $userStmt->bind_param('sssssssssss', $fullName, $email, $phone, $hashedPassword, $role, $status, $verificationTokenHash, $verificationExpires, $createdAt, $createdAt, $createdAt);
     $userStmt->execute();
 
     if ($userStmt->affected_rows !== 1) {
@@ -162,18 +165,22 @@ try {
     $employerStmt->close();
 
     $conn->commit();
-    sendApplicationEmail($email, $fullName, 'welcome', []);
-    // Notify admins about new employer registration and pending company
-    $notificationTitle = 'New Employer Registration';
-    $notificationMessage = 'A new employer account has been registered and may require review.';
-    notifyAdmins($conn, 'admin_employer', $notificationTitle, $notificationMessage, BASE_URL . 'admin/employers.php');
+    sendApplicationEmail($email, $fullName, 'email_verification', [
+        'account_type' => 'employer account',
+        'action_url' => APP_URL . '/auth/verify_email.php?token=' . urlencode($verificationToken),
+    ]);
+    // Notify admins once for this newly created company awaiting approval.
+    $companyPendingTitle = 'New Company Pending Approval';
+    $companyPendingMessage = 'A new employer/company has registered and is waiting for your approval.';
+    notifyAdmins(
+        $conn,
+        'admin_verification',
+        $companyPendingTitle,
+        $companyPendingMessage,
+        BASE_URL . 'admin/employers.php?company_id=' . $companyId
+    );
 
-    // If company defaults to Pending verification (by schema default), alert admins
-    $companyPendingTitle = 'Company Awaiting Approval';
-    $companyPendingMessage = 'A company profile is awaiting verification review.';
-    notifyAdmins($conn, 'admin_verification', $companyPendingTitle, $companyPendingMessage, BASE_URL . 'admin/employers.php');
-
-    $_SESSION['success'] = 'Employer registration successful. Please login to continue.';
+    $_SESSION['success'] = 'Employer registration successful. Please check your email and click the verification link to activate your email address.';
     redirect('login.php');
 } catch (Exception $e) {
     $conn->rollback();
