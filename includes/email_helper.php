@@ -14,7 +14,7 @@ if (file_exists($composerAutoloader)) {
 }
 
 if (!function_exists('sendHtmlEmail')) {
-    function sendHtmlEmail(string $toEmail, string $toName, string $subject, string $message, ?string $actionUrl = null): bool
+    function sendHtmlEmail(string $toEmail, string $toName, string $subject, string $message, ?string $actionUrl = null, ?string $actionLabel = null): bool
     {
         if (!defined('EMAIL_ENABLED') || !EMAIL_ENABLED) {
             return true;
@@ -44,7 +44,7 @@ if (!function_exists('sendHtmlEmail')) {
                 $mail->addAddress($toEmail, $toName);
                 $mail->isHTML(true);
                 $mail->Subject = $subject;
-                $mail->Body = buildEmailTemplate($subject, $message, $actionUrl);
+                $mail->Body = buildEmailTemplate($subject, $message, $actionUrl, $actionLabel);
                 $mail->AltBody = strip_tags($message)
                     . ($actionUrl ? "\n\nVerification link: " . $actionUrl : '');
                 $mail->send();
@@ -65,12 +65,12 @@ if (!function_exists('sendHtmlEmail')) {
 }
 
 if (!function_exists('buildEmailTemplate')) {
-    function buildEmailTemplate(string $subject, string $message, ?string $actionUrl = null): string
+    function buildEmailTemplate(string $subject, string $message, ?string $actionUrl = null, ?string $actionLabel = null): string
     {
         $safeSubject = htmlspecialchars($subject, ENT_QUOTES, 'UTF-8');
         $safeMessage = nl2br(htmlspecialchars($message, ENT_QUOTES, 'UTF-8'));
         $safeActionUrl = htmlspecialchars($actionUrl ?: APP_URL, ENT_QUOTES, 'UTF-8');
-        $actionLabel = $actionUrl ? 'Verify My Email' : 'Open GradConnect SL';
+        $actionLabel = $actionLabel ?: ($actionUrl ? 'Verify My Email' : 'Open GradConnect SL');
         $fallbackUrl = $actionUrl
             ? '<p style="margin:0;color:#4b5563;font-size:13px;line-height:1.5;">If the button does not work, copy and paste this link into your browser:<br><a href="%s" style="color:#0d6efd;word-break:break-all;">%s</a></p>'
             : '';
@@ -171,6 +171,13 @@ if (!function_exists('sendApplicationEmail')) {
                     $recipientType
                 );
                 break;
+            case 'password_reset':
+                $subject = 'Reset Your GradConnect SL Password';
+                $message = sprintf(
+                    'Hello %s, a password reset was requested for your GradConnect SL account. Use the button below to create a new password. This link expires in 1 hour. If you did not request this, you can safely ignore this email.',
+                    $recipientName
+                );
+                break;
             default:
                 return;
         }
@@ -187,6 +194,13 @@ if (!function_exists('sendApplicationEmail')) {
             $message .= ' Application ID: ' . $data['application_id'];
         }
 
-        sendHtmlEmail($recipientEmail, $recipientName, $subject, $message, $data['action_url'] ?? null);
+        sendHtmlEmail(
+            $recipientEmail,
+            $recipientName,
+            $subject,
+            $message,
+            $data['action_url'] ?? null,
+            $eventType === 'password_reset' ? 'Reset Password' : null
+        );
     }
 }

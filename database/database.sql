@@ -46,6 +46,9 @@ CREATE TABLE users
     email_verification_token CHAR(64) DEFAULT NULL,
     email_verification_expires DATETIME DEFAULT NULL,
     email_verification_sent_at DATETIME DEFAULT NULL,
+    password_reset_token CHAR(64) DEFAULT NULL,
+    password_reset_expires DATETIME DEFAULT NULL,
+    password_reset_sent_at DATETIME DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON
     UPDATE CURRENT_TIMESTAMP,
