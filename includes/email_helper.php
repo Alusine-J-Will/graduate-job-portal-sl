@@ -8,8 +8,13 @@
 
 require_once __DIR__ . '/../config/email_config.php';
 
+$composerAutoloader = __DIR__ . '/../vendor/autoload.php';
+if (file_exists($composerAutoloader)) {
+    require_once $composerAutoloader;
+}
+
 if (!function_exists('sendHtmlEmail')) {
-    function sendHtmlEmail(string $toEmail, string $toName, string $subject, string $message): bool
+    function sendHtmlEmail(string $toEmail, string $toName, string $subject, string $message, ?string $actionUrl = null): bool
     {
         if (!defined('EMAIL_ENABLED') || !EMAIL_ENABLED) {
             return true;
@@ -20,12 +25,7 @@ if (!function_exists('sendHtmlEmail')) {
             return false;
         }
 
-        $phpMailerPath = __DIR__ . '/../vendor/phpmailer/phpmailer/src/PHPMailer.php';
-        if (file_exists($phpMailerPath)) {
-            require_once $phpMailerPath;
-            require_once __DIR__ . '/../vendor/phpmailer/phpmailer/src/SMTP.php';
-            require_once __DIR__ . '/../vendor/phpmailer/phpmailer/src/Exception.php';
-
+        if (class_exists('PHPMailer\\PHPMailer\\PHPMailer')) {
             $mail = new PHPMailer\PHPMailer\PHPMailer(true);
 
             try {
@@ -44,7 +44,7 @@ if (!function_exists('sendHtmlEmail')) {
                 $mail->addAddress($toEmail, $toName);
                 $mail->isHTML(true);
                 $mail->Subject = $subject;
-                $mail->Body = buildEmailTemplate($subject, $message);
+                $mail->Body = buildEmailTemplate($subject, $message, $actionUrl);
                 $mail->AltBody = strip_tags($message);
                 $mail->send();
                 return true;
@@ -53,31 +53,23 @@ if (!function_exists('sendHtmlEmail')) {
             }
         }
 
-        if (!empty(SMTP_HOST) && !empty(SMTP_USERNAME)) {
-            error_log('Email send skipped after PHPMailer failure because SMTP settings were incomplete.');
+        if (empty(SMTP_HOST) || empty(SMTP_USERNAME) || empty(SMTP_PASSWORD)) {
+            error_log('Email send skipped: Gmail SMTP credentials are incomplete.');
             return false;
         }
 
-        $headers = [
-            'From: ' . EMAIL_FROM_NAME . ' <' . EMAIL_FROM_ADDRESS . '>',
-            'MIME-Version: 1.0',
-            'Content-type: text/html; charset=UTF-8',
-        ];
-
-        $success = mail($toEmail, $subject, buildEmailTemplate($subject, $message), implode("\r\n", $headers));
-        if (!$success) {
-            error_log('PHP mail() failed for email to ' . $toEmail);
-        }
-
-        return $success;
+        error_log('Email send failed: PHPMailer is unavailable while SMTP_HOST is configured.');
+        return false;
     }
 }
 
 if (!function_exists('buildEmailTemplate')) {
-    function buildEmailTemplate(string $subject, string $message): string
+    function buildEmailTemplate(string $subject, string $message, ?string $actionUrl = null): string
     {
         $safeSubject = htmlspecialchars($subject, ENT_QUOTES, 'UTF-8');
         $safeMessage = nl2br(htmlspecialchars($message, ENT_QUOTES, 'UTF-8'));
+        $safeActionUrl = htmlspecialchars($actionUrl ?: APP_URL, ENT_QUOTES, 'UTF-8');
+        $actionLabel = $actionUrl ? 'Verify My Email' : 'Open GradConnect SL';
 
         return sprintf(
             '<!DOCTYPE html>
@@ -98,7 +90,7 @@ if (!function_exists('buildEmailTemplate')) {
                                     <h2 style="margin:0 0 12px;font-size:20px;color:#111827;">%s</h2>
                                     <p style="margin:0 0 20px;line-height:1.6;color:#4b5563;">%s</p>
                                     <p style="margin:0 0 24px;">
-                                        <a href="%s" style="display:inline-block;padding:12px 20px;background:#0d6efd;color:#ffffff;text-decoration:none;border-radius:8px;">Open GradConnect SL</a>
+                                        <a href="%s" style="display:inline-block;padding:12px 20px;background:#0d6efd;color:#ffffff;text-decoration:none;border-radius:8px;">%s</a>
                                     </p>
                                 </td>
                             </tr>
@@ -115,7 +107,8 @@ if (!function_exists('buildEmailTemplate')) {
             </html>',
             $safeSubject,
             $safeMessage,
-            APP_URL
+            $safeActionUrl,
+            $actionLabel
         );
     }
 }
@@ -163,6 +156,15 @@ if (!function_exists('sendApplicationEmail')) {
                 $subject = 'Welcome to GradConnect SL';
                 $message = 'Welcome to Graduate Job Portal SL. We are excited to have you on board.';
                 break;
+            case 'email_verification':
+                $subject = 'Verify Your GradConnect SL Account';
+                $recipientType = !empty($data['account_type']) ? $data['account_type'] : 'account';
+                $message = sprintf(
+                    'Hello %s, your %s has been created. Please verify this email address by clicking the button below. This link expires in 24 hours. If you did not create this account, you can safely ignore this email.',
+                    $recipientName,
+                    $recipientType
+                );
+                break;
             default:
                 return;
         }
@@ -179,6 +181,6 @@ if (!function_exists('sendApplicationEmail')) {
             $message .= ' Application ID: ' . $data['application_id'];
         }
 
-        sendHtmlEmail($recipientEmail, $recipientName, $subject, $message);
+        sendHtmlEmail($recipientEmail, $recipientName, $subject, $message, $data['action_url'] ?? null);
     }
 }

@@ -3,7 +3,7 @@
  * Email configuration for GradConnect SL.
  *
  * SMTP settings are loaded from environment variables when available.
- * If no SMTP settings are configured, the mailer will silently skip sending.
+ * The Gmail App Password must be supplied through GRADCONNECT_SMTP_PASSWORD.
  */
 
 if (!defined('EMAIL_ENABLED')) {
@@ -15,11 +15,11 @@ if (!defined('EMAIL_FROM_NAME')) {
 }
 
 if (!defined('EMAIL_FROM_ADDRESS')) {
-    define('EMAIL_FROM_ADDRESS', getenv('GRADCONNECT_EMAIL_FROM_ADDRESS') ?: 'no-reply@gradconnect.local');
+    define('EMAIL_FROM_ADDRESS', getenv('GRADCONNECT_EMAIL_FROM_ADDRESS') ?: 'gradconnectsl.notifications@gmail.com');
 }
 
 if (!defined('SMTP_HOST')) {
-    define('SMTP_HOST', getenv('GRADCONNECT_SMTP_HOST') ?: '');
+    define('SMTP_HOST', getenv('GRADCONNECT_SMTP_HOST') ?: 'smtp.gmail.com');
 }
 
 if (!defined('SMTP_PORT')) {
@@ -27,7 +27,7 @@ if (!defined('SMTP_PORT')) {
 }
 
 if (!defined('SMTP_USERNAME')) {
-    define('SMTP_USERNAME', getenv('GRADCONNECT_SMTP_USERNAME') ?: '');
+    define('SMTP_USERNAME', getenv('GRADCONNECT_SMTP_USERNAME') ?: 'gradconnectsl.notifications@gmail.com');
 }
 
 if (!defined('SMTP_PASSWORD')) {
