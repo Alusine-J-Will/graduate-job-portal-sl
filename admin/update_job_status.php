@@ -8,6 +8,9 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     redirect(BASE_URL . 'auth/login.php');
 }
 
+$_SESSION['error'] = 'You do not have permission to modify jobs.';
+redirect('jobs.php');
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     redirect('jobs.php');
 }

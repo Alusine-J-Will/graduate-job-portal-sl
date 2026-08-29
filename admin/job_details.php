@@ -120,16 +120,6 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                     </div>
                     <div class="d-flex flex-wrap gap-2">
                         <a href="jobs.php" class="btn btn-outline-custom">Back to Jobs</a>
-                        <form method="post" action="update_job_status.php" class="d-inline">
-                            <input type="hidden" name="job_id" value="<?php echo (int) $job['job_id']; ?>">
-                            <input type="hidden" name="status" value="Open">
-                            <button type="submit" class="btn btn-success">Open Job</button>
-                        </form>
-                        <form method="post" action="update_job_status.php" class="d-inline">
-                            <input type="hidden" name="job_id" value="<?php echo (int) $job['job_id']; ?>">
-                            <input type="hidden" name="status" value="Closed">
-                            <button type="submit" class="btn btn-secondary">Close Job</button>
-                        </form>
                     </div>
                 </div>
 
@@ -215,26 +205,8 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                     </div>
                 </div>
 
-                <div class="border rounded-4 p-4 mb-4">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h2 class="h6 fw-semibold mb-0">Change Job Status</h2>
-                        <form method="post" action="update_job_status.php" class="d-flex gap-2">
-                            <input type="hidden" name="job_id" value="<?php echo (int) $job['job_id']; ?>">
-                            <select class="form-select" name="status" style="min-width: 150px;">
-                                <option value="Open"<?php echo $job['status'] === 'Open' ? ' selected' : ''; ?>>Open</option>
-                                <option value="Closed"<?php echo $job['status'] === 'Closed' ? ' selected' : ''; ?>>Closed</option>
-                                <option value="Draft"<?php echo $job['status'] === 'Draft' ? ' selected' : ''; ?>>Draft</option>
-                            </select>
-                            <button type="submit" class="btn btn-primary-custom">Update</button>
-                        </form>
-                    </div>
-                </div>
-
                 <div class="border rounded-4 p-4">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h2 class="h6 fw-semibold mb-0">Recent Applicants</h2>
-                        <a href="delete_job.php?job_id=<?php echo (int) $job['job_id']; ?>" class="btn btn-outline-danger btn-sm">Delete Job</a>
-                    </div>
+                    <h2 class="h6 fw-semibold mb-3">Recent Applicants</h2>
                     <?php if (empty($applicants)): ?>
                         <p class="text-muted mb-0">No applicants yet.</p>
                     <?php else: ?>

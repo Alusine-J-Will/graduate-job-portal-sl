@@ -8,6 +8,9 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     redirect(BASE_URL . 'auth/login.php');
 }
 
+$_SESSION['error'] = 'You do not have permission to modify jobs.';
+redirect('jobs.php');
+
 $pageTitle = 'Delete Job';
 $conn = $GLOBALS['conn'];
 
