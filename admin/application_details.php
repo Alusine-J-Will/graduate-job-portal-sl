@@ -83,7 +83,7 @@ $skillsStmt->close();
 
 $totalApplications = 0;
 $pendingApplications = 0;
-$reviewedApplications = 0;
+$underReviewApplications = 0;
 $shortlistedApplications = 0;
 $rejectedApplications = 0;
 $acceptedApplications = 0;
@@ -94,31 +94,31 @@ $countStmt->bind_result($totalApplications);
 $countStmt->fetch();
 $countStmt->close();
 
-$pendingStmt = $conn->prepare("SELECT COUNT(*) FROM applications WHERE status = 'Pending'");
+$pendingStmt = $conn->prepare("SELECT COUNT(*) FROM applications WHERE status = 'pending'");
 $pendingStmt->execute();
 $pendingStmt->bind_result($pendingApplications);
 $pendingStmt->fetch();
 $pendingStmt->close();
 
-$reviewedStmt = $conn->prepare("SELECT COUNT(*) FROM applications WHERE status = 'Reviewed'");
-$reviewedStmt->execute();
-$reviewedStmt->bind_result($reviewedApplications);
-$reviewedStmt->fetch();
-$reviewedStmt->close();
+$underReviewStmt = $conn->prepare("SELECT COUNT(*) FROM applications WHERE status = 'under_review'");
+$underReviewStmt->execute();
+$underReviewStmt->bind_result($underReviewApplications);
+$underReviewStmt->fetch();
+$underReviewStmt->close();
 
-$shortlistedStmt = $conn->prepare("SELECT COUNT(*) FROM applications WHERE status = 'Shortlisted'");
+$shortlistedStmt = $conn->prepare("SELECT COUNT(*) FROM applications WHERE status = 'shortlisted'");
 $shortlistedStmt->execute();
 $shortlistedStmt->bind_result($shortlistedApplications);
 $shortlistedStmt->fetch();
 $shortlistedStmt->close();
 
-$rejectedStmt = $conn->prepare("SELECT COUNT(*) FROM applications WHERE status = 'Rejected'");
+$rejectedStmt = $conn->prepare("SELECT COUNT(*) FROM applications WHERE status = 'rejected'");
 $rejectedStmt->execute();
 $rejectedStmt->bind_result($rejectedApplications);
 $rejectedStmt->fetch();
 $rejectedStmt->close();
 
-$acceptedStmt = $conn->prepare("SELECT COUNT(*) FROM applications WHERE status = 'Accepted'");
+$acceptedStmt = $conn->prepare("SELECT COUNT(*) FROM applications WHERE status = 'accepted'");
 $acceptedStmt->execute();
 $acceptedStmt->bind_result($acceptedApplications);
 $acceptedStmt->fetch();
@@ -146,8 +146,8 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                         <a href="applications.php" class="btn btn-outline-custom">Back to Applications</a>
                         <form method="post" action="update_application_status.php" class="d-inline">
                             <input type="hidden" name="application_id" value="<?php echo (int) $application['application_id']; ?>">
-                            <input type="hidden" name="status" value="Reviewed">
-                            <button type="submit" class="btn btn-info">Mark Reviewed</button>
+                            <input type="hidden" name="status" value="under_review">
+                            <button type="submit" class="btn btn-info">Mark Under Review</button>
                         </form>
                     </div>
                 </div>
@@ -194,7 +194,7 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                     <div class="col-lg-6">
                         <div class="border rounded-4 p-4 h-100">
                             <h2 class="h6 fw-semibold mb-3">Application Information</h2>
-                            <p class="mb-2"><strong>Status:</strong> <span class="badge bg-primary"><?php echo htmlspecialchars($application['status'] ?? 'Pending'); ?></span></p>
+                            <p class="mb-2"><strong>Status:</strong> <span class="badge <?php echo getApplicationStatusBadgeClass($application['status'] ?? 'pending'); ?>"><?php echo htmlspecialchars(getApplicationStatusLabel($application['status'] ?? 'pending')); ?></span></p>
                             <p class="mb-2"><strong>Application Date:</strong> <?php echo date('d M Y', strtotime($application['application_date'])); ?></p>
                             <p class="mb-2"><strong>Cover Letter:</strong></p>
                             <div class="text-muted" style="white-space: pre-wrap;"><?php echo nl2br(htmlspecialchars($application['cover_letter_text'] ?: 'No cover letter provided.')); ?></div>
@@ -223,7 +223,7 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                             <ul class="list-group list-group-flush">
                                 <li class="list-group-item px-0 d-flex justify-content-between"><span>Total</span><strong><?php echo (int) $totalApplications; ?></strong></li>
                                 <li class="list-group-item px-0 d-flex justify-content-between"><span>Pending</span><strong><?php echo (int) $pendingApplications; ?></strong></li>
-                                <li class="list-group-item px-0 d-flex justify-content-between"><span>Reviewed</span><strong><?php echo (int) $reviewedApplications; ?></strong></li>
+                                <li class="list-group-item px-0 d-flex justify-content-between"><span>Under Review</span><strong><?php echo (int) $underReviewApplications; ?></strong></li>
                                 <li class="list-group-item px-0 d-flex justify-content-between"><span>Shortlisted</span><strong><?php echo (int) $shortlistedApplications; ?></strong></li>
                                 <li class="list-group-item px-0 d-flex justify-content-between"><span>Rejected</span><strong><?php echo (int) $rejectedApplications; ?></strong></li>
                                 <li class="list-group-item px-0 d-flex justify-content-between"><span>Accepted</span><strong><?php echo (int) $acceptedApplications; ?></strong></li>
@@ -237,22 +237,22 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                     <div class="d-flex flex-wrap gap-2">
                         <form method="post" action="update_application_status.php" class="d-inline">
                             <input type="hidden" name="application_id" value="<?php echo (int) $application['application_id']; ?>">
-                            <input type="hidden" name="status" value="Reviewed">
-                            <button type="submit" class="btn btn-outline-info">Reviewed</button>
+                            <input type="hidden" name="status" value="under_review">
+                            <button type="submit" class="btn btn-outline-info">Under Review</button>
                         </form>
                         <form method="post" action="update_application_status.php" class="d-inline">
                             <input type="hidden" name="application_id" value="<?php echo (int) $application['application_id']; ?>">
-                            <input type="hidden" name="status" value="Shortlisted">
+                            <input type="hidden" name="status" value="shortlisted">
                             <button type="submit" class="btn btn-outline-primary">Shortlist</button>
                         </form>
                         <form method="post" action="update_application_status.php" class="d-inline">
                             <input type="hidden" name="application_id" value="<?php echo (int) $application['application_id']; ?>">
-                            <input type="hidden" name="status" value="Rejected">
+                            <input type="hidden" name="status" value="rejected">
                             <button type="submit" class="btn btn-outline-danger">Reject</button>
                         </form>
                         <form method="post" action="update_application_status.php" class="d-inline">
                             <input type="hidden" name="application_id" value="<?php echo (int) $application['application_id']; ?>">
-                            <input type="hidden" name="status" value="Accepted">
+                            <input type="hidden" name="status" value="accepted">
                             <button type="submit" class="btn btn-outline-success">Accept</button>
                         </form>
                     </div>

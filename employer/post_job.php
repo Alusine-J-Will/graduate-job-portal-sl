@@ -25,6 +25,38 @@ if (!$companyId) {
     redirect('profile.php');
 }
 
+// Check email verification status
+$userCheckStmt = $conn->prepare('SELECT email_verified FROM users WHERE user_id = ? LIMIT 1');
+$userCheckStmt->bind_param('i', $userId);
+$userCheckStmt->execute();
+$userCheckResult = $userCheckStmt->get_result();
+$userCheck = $userCheckResult->fetch_assoc();
+$userCheckStmt->close();
+
+$emailVerified = (int) ($userCheck['email_verified'] ?? 0) === 1;
+if (!$emailVerified) {
+    $_SESSION['error'] = 'Please verify your email address before posting jobs.';
+    redirect('dashboard.php');
+}
+
+// Check company approval status
+$companyCheckStmt = $conn->prepare('SELECT verification_status FROM companies WHERE company_id = ? LIMIT 1');
+$companyCheckStmt->bind_param('i', $companyId);
+$companyCheckStmt->execute();
+$companyCheckResult = $companyCheckStmt->get_result();
+$companyCheck = $companyCheckResult->fetch_assoc();
+$companyCheckStmt->close();
+
+$verificationStatus = $companyCheck['verification_status'] ?? 'Pending';
+if ($verificationStatus !== 'Approved') {
+    if ($verificationStatus === 'Rejected') {
+        $_SESSION['error'] = 'Your company approval request was rejected. Please contact the administrator for more information.';
+    } else {
+        $_SESSION['error'] = 'Your company has not been approved yet. You will be able to post jobs once your company has been approved by the administrator.';
+    }
+    redirect('dashboard.php');
+}
+
 $categoriesStmt = $conn->prepare('SELECT category_id, category_name FROM job_categories ORDER BY category_name ASC');
 $categoriesStmt->execute();
 $categoriesResult = $categoriesStmt->get_result();
@@ -105,15 +137,34 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                             <input type="text" class="form-control" id="location" name="location" value="<?php echo htmlspecialchars($formData['location'] ?? ''); ?>" placeholder="e.g. Freetown, Sierra Leone" required>
                             <div class="invalid-feedback">Job location is required and must be shorter than 150 characters.</div>
                         </div>
-                        <div class="col-md-3">
-                            <label for="min_salary" class="form-label fw-semibold">Minimum Salary</label>
-                            <input type="number" class="form-control" id="min_salary" name="min_salary" value="<?php echo htmlspecialchars($formData['min_salary'] ?? ''); ?>" min="0" placeholder="Optional">
-                            <div class="invalid-feedback">Minimum salary must be a valid number.</div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Salary / Compensation</label>
+                            <div class="d-flex flex-wrap gap-3 mt-2">
+                                <?php $salaryTypeOptions = ['negotiable' => 'Negotiable', 'competitive' => 'Competitive', 'not_disclosed' => 'Not disclosed', 'fixed' => 'Fixed amount']; foreach ($salaryTypeOptions as $value => $label): ?>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="salary_type" id="salary_type_<?php echo htmlspecialchars($value); ?>" value="<?php echo htmlspecialchars($value); ?>" <?php echo (($formData['salary_type'] ?? 'negotiable') === $value) ? 'checked' : ''; ?>>
+                                        <label class="form-check-label" for="salary_type_<?php echo htmlspecialchars($value); ?>"><?php echo htmlspecialchars($label); ?></label>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
                         </div>
-                        <div class="col-md-3">
-                            <label for="max_salary" class="form-label fw-semibold">Maximum Salary</label>
-                            <input type="number" class="form-control" id="max_salary" name="max_salary" value="<?php echo htmlspecialchars($formData['max_salary'] ?? ''); ?>" min="0" placeholder="Optional">
-                            <div class="invalid-feedback">Maximum salary must be a valid number.</div>
+                        <div class="col-md-6" id="salary-fixed-fields" style="display: none;">
+                            <div class="row g-3">
+                                <div class="col-md-7">
+                                    <label for="salary_amount" class="form-label fw-semibold">Salary Amount</label>
+                                    <input type="number" class="form-control" id="salary_amount" name="salary_amount" value="<?php echo htmlspecialchars($formData['salary_amount'] ?? ''); ?>" min="0" step="0.01" placeholder="e.g. 8000">
+                                    <div class="invalid-feedback">Salary amount is required when fixed amount is selected.</div>
+                                </div>
+                                <div class="col-md-5">
+                                    <label for="salary_period" class="form-label fw-semibold">Salary Period</label>
+                                    <select class="form-select" id="salary_period" name="salary_period">
+                                        <option value="">Select</option>
+                                        <option value="monthly"<?php echo (($formData['salary_period'] ?? '') === 'monthly') ? ' selected' : ''; ?>>Monthly</option>
+                                        <option value="annual"<?php echo (($formData['salary_period'] ?? '') === 'annual') ? ' selected' : ''; ?>>Annual</option>
+                                    </select>
+                                    <div class="invalid-feedback">Please select a salary period.</div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="col-md-6">
@@ -206,6 +257,34 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
     'use strict';
     const form = document.getElementById('post-job-form');
     const skillsInput = document.getElementById('skills');
+    const fixedFields = document.getElementById('salary-fixed-fields');
+    const salaryInputs = document.querySelectorAll('input[name="salary_type"]');
+    const salaryAmount = document.getElementById('salary_amount');
+    const salaryPeriod = document.getElementById('salary_period');
+
+    function toggleSalaryFields() {
+        const selected = document.querySelector('input[name="salary_type"]:checked');
+        const isFixed = selected && selected.value === 'fixed';
+        if (!fixedFields) {
+            return;
+        }
+
+        fixedFields.style.display = isFixed ? 'block' : 'none';
+        if (salaryAmount) {
+            salaryAmount.disabled = !isFixed;
+            salaryAmount.required = isFixed;
+            if (!isFixed) {
+                salaryAmount.value = '';
+            }
+        }
+        if (salaryPeriod) {
+            salaryPeriod.disabled = !isFixed;
+            salaryPeriod.required = isFixed;
+            if (!isFixed) {
+                salaryPeriod.value = '';
+            }
+        }
+    }
 
     if (skillsInput) {
         new Tagify(skillsInput, {
@@ -216,6 +295,9 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
             }
         });
     }
+
+    salaryInputs.forEach((input) => input.addEventListener('change', toggleSalaryFields));
+    toggleSalaryFields();
 
     form.addEventListener('submit', function (event) {
         if (!form.checkValidity()) {

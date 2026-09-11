@@ -42,6 +42,8 @@ CREATE TABLE users
     ('graduate', 'employer', 'admin') NOT NULL,
     status ENUM
     ('pending', 'active', 'inactive') NOT NULL DEFAULT 'pending',
+    terms_accepted TINYINT(1) NOT NULL DEFAULT 0,
+    terms_accepted_at DATETIME DEFAULT NULL,
     email_verified TINYINT(1) NOT NULL DEFAULT 0,
     email_verification_token CHAR(64) DEFAULT NULL,
     email_verification_expires DATETIME DEFAULT NULL,
@@ -219,6 +221,12 @@ CREATE TABLE users
                                         (100) DEFAULT NULL,
     salary VARCHAR
                                         (100) DEFAULT NULL,
+    salary_type ENUM
+                                        ('negotiable', 'competitive', 'not_disclosed', 'fixed') NOT NULL DEFAULT 'negotiable',
+    salary_amount DECIMAL
+                                        (12, 2) DEFAULT NULL,
+    salary_period ENUM
+                                        ('monthly', 'annual') DEFAULT NULL,
     vacancies INT DEFAULT NULL,
     education_level VARCHAR
                                         (100) DEFAULT NULL,
@@ -247,7 +255,9 @@ CREATE TABLE users
                                             (255) DEFAULT NULL,
     application_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     status ENUM
-                                            ('Submitted', 'Under Review', 'Shortlisted', 'Interview', 'Rejected', 'Accepted') NOT NULL DEFAULT 'Submitted',
+                                            ('pending', 'under_review', 'shortlisted', 'interview_scheduled', 'accepted', 'rejected') NOT NULL DEFAULT 'pending',
+    interview_date DATE DEFAULT NULL,
+    interview_time TIME DEFAULT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON
                                             UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY

@@ -57,28 +57,28 @@ $applicationsStmt->bind_result($totalApplications);
 $applicationsStmt->fetch();
 $applicationsStmt->close();
 
-$pendingStmt = $conn->prepare("SELECT COUNT(*) FROM applications WHERE job_id = ? AND status = 'Submitted'");
+$pendingStmt = $conn->prepare("SELECT COUNT(*) FROM applications WHERE job_id = ? AND status = 'pending'");
 $pendingStmt->bind_param('i', $jobId);
 $pendingStmt->execute();
 $pendingStmt->bind_result($pendingApplications);
 $pendingStmt->fetch();
 $pendingStmt->close();
 
-$reviewedStmt = $conn->prepare("SELECT COUNT(*) FROM applications WHERE job_id = ? AND status IN ('Under Review', 'Interview', 'Accepted')");
+$reviewedStmt = $conn->prepare("SELECT COUNT(*) FROM applications WHERE job_id = ? AND status IN ('under_review', 'interview_scheduled', 'accepted')");
 $reviewedStmt->bind_param('i', $jobId);
 $reviewedStmt->execute();
 $reviewedStmt->bind_result($reviewedApplications);
 $reviewedStmt->fetch();
 $reviewedStmt->close();
 
-$shortlistedStmt = $conn->prepare("SELECT COUNT(*) FROM applications WHERE job_id = ? AND status = 'Shortlisted'");
+$shortlistedStmt = $conn->prepare("SELECT COUNT(*) FROM applications WHERE job_id = ? AND status = 'shortlisted'");
 $shortlistedStmt->bind_param('i', $jobId);
 $shortlistedStmt->execute();
 $shortlistedStmt->bind_result($shortlistedApplications);
 $shortlistedStmt->fetch();
 $shortlistedStmt->close();
 
-$rejectedStmt = $conn->prepare("SELECT COUNT(*) FROM applications WHERE job_id = ? AND status = 'Rejected'");
+$rejectedStmt = $conn->prepare("SELECT COUNT(*) FROM applications WHERE job_id = ? AND status = 'rejected'");
 $rejectedStmt->bind_param('i', $jobId);
 $rejectedStmt->execute();
 $rejectedStmt->bind_result($rejectedApplications);
@@ -132,7 +132,7 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                             <p class="mb-2"><strong>Employment Type:</strong> <?php echo htmlspecialchars($job['employment_type'] ?: 'N/A'); ?></p>
                             <p class="mb-2"><strong>Work Mode:</strong> <?php echo htmlspecialchars($job['work_mode'] ?: 'N/A'); ?></p>
                             <p class="mb-2"><strong>Location:</strong> <?php echo htmlspecialchars($job['location']); ?></p>
-                            <p class="mb-2"><strong>Salary:</strong> <?php echo htmlspecialchars($job['salary'] ?: 'N/A'); ?></p>
+                            <p class="mb-2"><strong>Salary:</strong> <?php echo htmlspecialchars(formatJobSalaryDisplay($job['salary'] ?? null, $job['salary_type'] ?? null, $job['salary_amount'] ?? null, $job['salary_period'] ?? null)); ?></p>
                             <p class="mb-2"><strong>Vacancies:</strong> <?php echo (int) ($job['vacancies'] ?? 0); ?></p>
                             <p class="mb-2"><strong>Deadline:</strong> <?php echo !empty($job['deadline']) ? date('d M Y', strtotime($job['deadline'])) : 'N/A'; ?></p>
                             <p class="mb-0"><strong>Status:</strong> <span class="badge bg-success"><?php echo htmlspecialchars($job['status']); ?></span></p>
@@ -186,7 +186,7 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                         </div>
                         <div class="col-md-3">
                             <div class="border rounded-3 p-3">
-                                <div class="small text-muted">Reviewed</div>
+                                <div class="small text-muted">Under Review</div>
                                 <div class="fw-bold fs-5"><?php echo (int) $reviewedApplications; ?></div>
                             </div>
                         </div>

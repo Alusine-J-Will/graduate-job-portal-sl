@@ -68,6 +68,7 @@ if (!empty($errors)) {
 }
 
 $conn = $GLOBALS['conn'];
+ensureUserTermsAcceptanceFields($conn);
 
 $stmt = $conn->prepare('SELECT user_id FROM users WHERE email = ? LIMIT 1');
 $stmt->bind_param('s', $email);
@@ -92,10 +93,11 @@ $verificationExpires = date('Y-m-d H:i:s', time() + 86400);
 $conn->begin_transaction();
 
 try {
-    $userStmt = $conn->prepare('INSERT INTO users (full_name, email, phone, password, role, status, email_verified, email_verification_token, email_verification_expires, email_verification_sent_at, created_at) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)');
+    $userStmt = $conn->prepare('INSERT INTO users (full_name, email, phone, password, role, status, terms_accepted, terms_accepted_at, email_verified, email_verification_token, email_verification_expires, email_verification_sent_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)');
     $role = 'graduate';
     $status = 'active';
-    $userStmt->bind_param('ssssssssss', $fullName, $email, $phone, $hashedPassword, $role, $status, $verificationTokenHash, $verificationExpires, $createdAt, $createdAt);
+    $termsAcceptedAt = date('Y-m-d H:i:s');
+    $userStmt->bind_param('ssssssisssss', $fullName, $email, $phone, $hashedPassword, $role, $status, $termsAccepted, $termsAcceptedAt, $verificationTokenHash, $verificationExpires, $createdAt, $createdAt);
     $userStmt->execute();
 
     if ($userStmt->affected_rows !== 1) {

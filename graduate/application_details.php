@@ -77,7 +77,11 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                             <p class="mb-2"><strong>Job:</strong> <?php echo htmlspecialchars($application['title']); ?></p>
                             <p class="mb-2"><strong>Company:</strong> <?php echo htmlspecialchars($application['company_name'] ?: 'Company not listed'); ?></p>
                             <p class="mb-2"><strong>Applied:</strong> <?php echo date('d M Y', strtotime($application['application_date'])); ?></p>
-                            <p class="mb-2"><strong>Status:</strong> <?php echo htmlspecialchars($application['status'] ?? 'Pending'); ?></p>
+                            <p class="mb-2"><strong>Status:</strong> <?php echo htmlspecialchars(getApplicationStatusLabel($application['status'] ?? 'pending')); ?></p>
+                            <?php if (normalizeApplicationStatus($application['status'] ?? '') === 'interview_scheduled' && !empty($application['interview_date']) && !empty($application['interview_time'])): ?>
+                                <p class="mb-2"><strong>Interview Date:</strong> <?php echo htmlspecialchars(date('l, j F Y', strtotime($application['interview_date']))); ?></p>
+                                <p class="mb-2"><strong>Interview Time:</strong> <?php echo htmlspecialchars(date('g:i A', strtotime($application['interview_time']))); ?></p>
+                            <?php endif; ?>
                             <p class="mb-0"><strong>Last Updated:</strong> <?php echo date('d M Y', strtotime($application['updated_at'])); ?></p>
                         </div>
                     </div>

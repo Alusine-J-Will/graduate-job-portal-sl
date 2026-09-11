@@ -38,13 +38,14 @@ $applicationsStmt->close();
 
 function getStatusBadge(string $status): string
 {
+    $status = normalizeApplicationStatus($status);
     $badges = [
-        'Pending' => 'bg-secondary',
-        'Under Review' => 'bg-primary',
-        'Shortlisted' => 'bg-info text-dark',
-        'Interview Scheduled' => 'bg-warning text-dark',
-        'Accepted' => 'bg-success',
-        'Rejected' => 'bg-danger',
+        'pending' => 'bg-secondary',
+        'under_review' => 'bg-primary',
+        'shortlisted' => 'bg-info text-dark',
+        'interview_scheduled' => 'bg-warning text-dark',
+        'accepted' => 'bg-success',
+        'rejected' => 'bg-danger',
     ];
 
     return $badges[$status] ?? 'bg-secondary';
@@ -85,7 +86,7 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                                             <p class="small text-muted mb-0">Applied: <?php echo date('d M Y', strtotime($application['application_date'])); ?></p>
                                         </div>
                                         <div class="text-md-end">
-                                            <span class="badge <?php echo getStatusBadge($application['status'] ?? 'Pending'); ?> mb-2"><?php echo htmlspecialchars($application['status'] ?? 'Pending'); ?></span>
+                                            <span class="badge <?php echo getStatusBadge($application['status'] ?? 'pending'); ?> mb-2"><?php echo htmlspecialchars(getApplicationStatusLabel($application['status'] ?? 'pending')); ?></span>
                                             <p class="small text-muted mb-0">Updated: <?php echo date('d M Y', strtotime($application['updated_at'])); ?></p>
                                         </div>
                                     </div>

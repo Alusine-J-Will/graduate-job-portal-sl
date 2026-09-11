@@ -15,6 +15,199 @@ function sanitizeInput(string $input): string
 {
     return trim(htmlspecialchars($input, ENT_QUOTES, 'UTF-8'));
 }
+
+function normalizeApplicationStatus(?string $status): string
+{
+    $normalized = strtolower(trim((string) $status));
+    if ($normalized === '') {
+        return '';
+    }
+
+    $normalized = str_replace([' ', '-'], '_', $normalized);
+
+    $statusMap = [
+        'submitted' => 'pending',
+        'pending' => 'pending',
+        'reviewed' => 'under_review',
+        'under_review' => 'under_review',
+        'underreview' => 'under_review',
+        'shortlisted' => 'shortlisted',
+        'interview' => 'interview_scheduled',
+        'interview_scheduled' => 'interview_scheduled',
+        'accepted' => 'accepted',
+        'rejected' => 'rejected',
+    ];
+
+    return $statusMap[$normalized] ?? '';
+}
+
+function getApplicationStatusLabel(?string $status): string
+{
+    $statusMap = [
+        'pending' => 'Pending',
+        'under_review' => 'Under Review',
+        'shortlisted' => 'Shortlisted',
+        'interview_scheduled' => 'Interview Scheduled',
+        'accepted' => 'Accepted',
+        'rejected' => 'Rejected',
+    ];
+
+    $normalized = normalizeApplicationStatus($status);
+    return $statusMap[$normalized] ?? 'Pending';
+}
+
+function getApplicationStatusBadgeClass(?string $status): string
+{
+    $statusMap = [
+        'pending' => 'bg-secondary',
+        'under_review' => 'bg-primary',
+        'shortlisted' => 'bg-info text-dark',
+        'interview_scheduled' => 'bg-warning text-dark',
+        'accepted' => 'bg-success',
+        'rejected' => 'bg-danger',
+    ];
+
+    return $statusMap[normalizeApplicationStatus($status)] ?? 'bg-secondary';
+}
+
+function ensureUserTermsAcceptanceFields(mysqli $conn): void
+{
+    $result = $conn->query('SHOW COLUMNS FROM users');
+    if ($result === false) {
+        return;
+    }
+
+    $existingColumns = [];
+    while ($row = $result->fetch_assoc()) {
+        $existingColumns[] = $row['Field'];
+    }
+    $result->free();
+
+    if (!in_array('terms_accepted', $existingColumns, true)) {
+        $conn->query('ALTER TABLE users ADD COLUMN terms_accepted TINYINT(1) NOT NULL DEFAULT 0 AFTER status');
+    }
+
+    if (!in_array('terms_accepted_at', $existingColumns, true)) {
+        $conn->query('ALTER TABLE users ADD COLUMN terms_accepted_at DATETIME DEFAULT NULL AFTER terms_accepted');
+    }
+}
+
+function normalizeSalaryType(?string $salaryType): string
+{
+    $normalized = strtolower(trim((string) $salaryType));
+    $aliases = [
+        'negotiable' => 'negotiable',
+        'competitive' => 'competitive',
+        'not disclosed' => 'not_disclosed',
+        'not_disclosed' => 'not_disclosed',
+        'fixed' => 'fixed',
+        'fixed amount' => 'fixed',
+    ];
+
+    return $aliases[$normalized] ?? 'negotiable';
+}
+
+function buildJobSalaryValue(?string $salaryType, ?string $salaryAmount, ?string $salaryPeriod): string
+{
+    $type = normalizeSalaryType($salaryType);
+
+    if ($type === 'negotiable') {
+        return 'Negotiable';
+    }
+
+    if ($type === 'competitive') {
+        return 'Competitive';
+    }
+
+    if ($type === 'not_disclosed') {
+        return 'Not disclosed';
+    }
+
+    $amount = trim((string) ($salaryAmount ?? ''));
+    if ($amount === '') {
+        return 'Not disclosed';
+    }
+
+    if (!is_numeric($amount) || (float) $amount < 0) {
+        return 'Not disclosed';
+    }
+
+    $period = strtolower(trim((string) ($salaryPeriod ?? '')));
+    $period = in_array($period, ['monthly', 'annual'], true) ? $period : 'monthly';
+    $formattedAmount = number_format((float) $amount, 0, '.', ',');
+    $suffix = $period === 'annual' ? '/year' : '/month';
+
+    return 'Le ' . $formattedAmount . $suffix;
+}
+
+function parseJobSalaryState(?string $salaryText = null, ?string $salaryType = null, ?string $salaryAmount = null, ?string $salaryPeriod = null): array
+{
+    $type = normalizeSalaryType($salaryType);
+    $amount = trim((string) ($salaryAmount ?? ''));
+    $period = strtolower(trim((string) ($salaryPeriod ?? '')));
+
+    if ($salaryType === null || $salaryType === '') {
+        $text = strtolower(trim((string) ($salaryText ?? '')));
+        if (str_contains($text, 'negotiable')) {
+            $type = 'negotiable';
+        } elseif (str_contains($text, 'competitive')) {
+            $type = 'competitive';
+        } elseif (str_contains($text, 'not disclosed') || str_contains($text, 'not_disclosed')) {
+            $type = 'not_disclosed';
+        } elseif (preg_match('/\d/', $text)) {
+            $type = 'fixed';
+        }
+    }
+
+    if ($type === 'fixed' && $amount === '' && $salaryText !== '') {
+        if (preg_match('/([0-9][0-9,\.]*)/', str_replace(',', '', $salaryText), $matches)) {
+            $amount = $matches[1];
+        }
+    }
+
+    if ($type === 'fixed' && $period === '') {
+        $text = strtolower(trim((string) ($salaryText ?? '')));
+        $period = str_contains($text, 'year') ? 'annual' : 'monthly';
+    }
+
+    return [
+        'type' => $type,
+        'amount' => $amount,
+        'period' => in_array($period, ['monthly', 'annual'], true) ? $period : 'monthly',
+    ];
+}
+
+function formatJobSalaryDisplay(?string $salaryText = null, ?string $salaryType = null, ?string $salaryAmount = null, ?string $salaryPeriod = null): string
+{
+    $state = parseJobSalaryState($salaryText, $salaryType, $salaryAmount, $salaryPeriod);
+
+    if ($state['type'] === 'negotiable') {
+        return 'Negotiable';
+    }
+
+    if ($state['type'] === 'competitive') {
+        return 'Competitive';
+    }
+
+    if ($state['type'] === 'not_disclosed') {
+        return 'Not disclosed';
+    }
+
+    $amount = trim((string) $state['amount']);
+    if ($amount === '') {
+        return $salaryText !== '' ? trim((string) $salaryText) : 'Not specified';
+    }
+
+    if (!is_numeric(str_replace(',', '', $amount)) || (float) str_replace(',', '', $amount) < 0) {
+        return $salaryText !== '' ? trim((string) $salaryText) : 'Not specified';
+    }
+
+    $numericValue = (float) str_replace(',', '', $amount);
+    $suffix = $state['period'] === 'annual' ? '/year' : '/month';
+
+    return 'Le ' . number_format($numericValue, 0, '.', ',') . $suffix;
+}
+
 function displayFlashMessages(): void
 {
     if (isset($_SESSION['success'])) {

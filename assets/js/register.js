@@ -12,6 +12,25 @@ function debounce(callback, delay) {
     };
 }
 
+function initLegalModals(accountType = null) {
+    const roleSelect = document.getElementById('role');
+    const sections = document.querySelectorAll('.terms-role-section');
+
+    function updateRoleSections() {
+        const selectedRole = accountType || (roleSelect ? roleSelect.value : 'graduate');
+        sections.forEach((section) => {
+            const visible = section.dataset.role === selectedRole || section.dataset.role === 'general';
+            section.hidden = !visible;
+        });
+    }
+
+    if (roleSelect) {
+        roleSelect.addEventListener('change', updateRoleSections);
+    }
+
+    updateRoleSections();
+}
+
 function initCombinedRegistration() {
     const form = document.getElementById('registration-form');
     const roleSelect = document.getElementById('role');
@@ -250,4 +269,7 @@ function initCombinedRegistration() {
     updateFormType();
 }
 
-document.addEventListener('DOMContentLoaded', initCombinedRegistration);
+document.addEventListener('DOMContentLoaded', function () {
+    initCombinedRegistration();
+    initLegalModals();
+});

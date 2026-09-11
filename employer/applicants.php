@@ -42,9 +42,9 @@ if ($search !== '') {
     $types .= 's';
 }
 
-if ($statusFilter !== '' && in_array($statusFilter, ['Pending','Under Review','Shortlisted','Interview Scheduled','Accepted','Rejected'], true)) {
+if ($statusFilter !== '' && in_array(normalizeApplicationStatus($statusFilter), ['pending','under_review','shortlisted','interview_scheduled','accepted','rejected'], true)) {
     $whereClauses[] = 'a.status = ?';
-    $params[] = $statusFilter;
+    $params[] = normalizeApplicationStatus($statusFilter);
     $types .= 's';
 }
 
@@ -79,13 +79,14 @@ $applicationsStmt->close();
 
 function getEmployerStatusBadge(string $status): string
 {
+    $status = normalizeApplicationStatus($status);
     $badges = [
-        'Pending' => 'bg-secondary',
-        'Under Review' => 'bg-primary',
-        'Shortlisted' => 'bg-info text-dark',
-        'Interview Scheduled' => 'bg-warning text-dark',
-        'Accepted' => 'bg-success',
-        'Rejected' => 'bg-danger',
+        'pending' => 'bg-secondary',
+        'under_review' => 'bg-primary',
+        'shortlisted' => 'bg-info text-dark',
+        'interview_scheduled' => 'bg-warning text-dark',
+        'accepted' => 'bg-success',
+        'rejected' => 'bg-danger',
     ];
 
     return $badges[$status] ?? 'bg-secondary';
@@ -130,12 +131,12 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                         <label class="form-label fw-semibold">Status</label>
                         <select class="form-select" name="status">
                             <option value="">All statuses</option>
-                            <option value="Pending"<?php echo $statusFilter === 'Pending' ? ' selected' : ''; ?>>Pending</option>
-                            <option value="Under Review"<?php echo $statusFilter === 'Under Review' ? ' selected' : ''; ?>>Under Review</option>
-                            <option value="Shortlisted"<?php echo $statusFilter === 'Shortlisted' ? ' selected' : ''; ?>>Shortlisted</option>
-                            <option value="Interview Scheduled"<?php echo $statusFilter === 'Interview Scheduled' ? ' selected' : ''; ?>>Interview Scheduled</option>
-                            <option value="Accepted"<?php echo $statusFilter === 'Accepted' ? ' selected' : ''; ?>>Accepted</option>
-                            <option value="Rejected"<?php echo $statusFilter === 'Rejected' ? ' selected' : ''; ?>>Rejected</option>
+                            <option value="pending"<?php echo normalizeApplicationStatus($statusFilter) === 'pending' ? ' selected' : ''; ?>>Pending</option>
+                            <option value="under_review"<?php echo normalizeApplicationStatus($statusFilter) === 'under_review' ? ' selected' : ''; ?>>Under Review</option>
+                            <option value="shortlisted"<?php echo normalizeApplicationStatus($statusFilter) === 'shortlisted' ? ' selected' : ''; ?>>Shortlisted</option>
+                            <option value="interview_scheduled"<?php echo normalizeApplicationStatus($statusFilter) === 'interview_scheduled' ? ' selected' : ''; ?>>Interview Scheduled</option>
+                            <option value="accepted"<?php echo normalizeApplicationStatus($statusFilter) === 'accepted' ? ' selected' : ''; ?>>Accepted</option>
+                            <option value="rejected"<?php echo normalizeApplicationStatus($statusFilter) === 'rejected' ? ' selected' : ''; ?>>Rejected</option>
                         </select>
                     </div>
                     <div class="col-md-2">
@@ -163,7 +164,7 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                                         <td><?php echo htmlspecialchars($application['full_name']); ?></td>
                                         <td><?php echo htmlspecialchars($application['job_title']); ?></td>
                                         <td><?php echo date('d M Y', strtotime($application['application_date'])); ?></td>
-                                        <td><span class="badge <?php echo getEmployerStatusBadge($application['status'] ?? 'Pending'); ?>"><?php echo htmlspecialchars($application['status'] ?? 'Pending'); ?></span></td>
+                                        <td><span class="badge <?php echo getEmployerStatusBadge($application['status'] ?? 'pending'); ?>"><?php echo htmlspecialchars(getApplicationStatusLabel($application['status'] ?? 'pending')); ?></span></td>
                                         <td><a href="application_details.php?application_id=<?php echo (int) $application['application_id']; ?>" class="btn btn-sm btn-outline-custom">Review</a></td>
                                     </tr>
                                 <?php endforeach; ?>

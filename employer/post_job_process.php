@@ -20,6 +20,38 @@ if (!$companyId) {
     redirect('profile.php');
 }
 
+// Check email verification status
+$userCheckStmt = $conn->prepare('SELECT email_verified FROM users WHERE user_id = ? LIMIT 1');
+$userCheckStmt->bind_param('i', $userId);
+$userCheckStmt->execute();
+$userCheckResult = $userCheckStmt->get_result();
+$userCheck = $userCheckResult->fetch_assoc();
+$userCheckStmt->close();
+
+$emailVerified = (int) ($userCheck['email_verified'] ?? 0) === 1;
+if (!$emailVerified) {
+    $_SESSION['error'] = 'Please verify your email address before posting jobs.';
+    redirect('post_job.php');
+}
+
+// Check company approval status
+$companyCheckStmt = $conn->prepare('SELECT verification_status FROM companies WHERE company_id = ? LIMIT 1');
+$companyCheckStmt->bind_param('i', $companyId);
+$companyCheckStmt->execute();
+$companyCheckResult = $companyCheckStmt->get_result();
+$companyCheck = $companyCheckResult->fetch_assoc();
+$companyCheckStmt->close();
+
+$verificationStatus = $companyCheck['verification_status'] ?? 'Pending';
+if ($verificationStatus !== 'Approved') {
+    if ($verificationStatus === 'Rejected') {
+        $_SESSION['error'] = 'Your company approval request was rejected. Please contact the administrator for more information.';
+    } else {
+        $_SESSION['error'] = 'Your company has not been approved yet. You will be able to post jobs once your company has been approved by the administrator.';
+    }
+    redirect('post_job.php');
+}
+
 $rawSkills = $_POST['skills'] ?? '';
 if (is_array($rawSkills)) {
     $skillItems = $rawSkills;
@@ -37,8 +69,9 @@ $postData = [
     'employment_type' => trim($_POST['employment_type'] ?? ''),
     'work_mode' => trim($_POST['work_mode'] ?? ''),
     'location' => trim($_POST['location'] ?? ''),
-    'min_salary' => trim($_POST['min_salary'] ?? ''),
-    'max_salary' => trim($_POST['max_salary'] ?? ''),
+    'salary_type' => strtolower(trim($_POST['salary_type'] ?? 'negotiable')),
+    'salary_amount' => trim($_POST['salary_amount'] ?? ''),
+    'salary_period' => strtolower(trim($_POST['salary_period'] ?? '')),
     'deadline' => trim($_POST['deadline'] ?? ''),
     'vacancies' => trim($_POST['vacancies'] ?? ''),
     'experience_level' => trim($_POST['experience_level'] ?? ''),
@@ -75,16 +108,27 @@ if ($postData['location'] === '' || mb_strlen($postData['location']) > 150) {
     $errors[] = 'Job location is required and must be less than 150 characters.';
 }
 
-if ($postData['min_salary'] !== '' && (!is_numeric($postData['min_salary']) || (float) $postData['min_salary'] < 0)) {
-    $errors[] = 'Minimum salary must be a valid positive number.';
+$validSalaryTypes = ['negotiable', 'competitive', 'not_disclosed', 'fixed'];
+if (!in_array($postData['salary_type'], $validSalaryTypes, true)) {
+    $errors[] = 'Please select a valid salary / compensation option.';
 }
 
-if ($postData['max_salary'] !== '' && (!is_numeric($postData['max_salary']) || (float) $postData['max_salary'] < 0)) {
-    $errors[] = 'Maximum salary must be a valid positive number.';
-}
+if ($postData['salary_type'] === 'fixed') {
+    if ($postData['salary_amount'] === '' || !is_numeric($postData['salary_amount']) || (float) $postData['salary_amount'] < 0) {
+        $errors[] = 'Salary amount is required and must be a valid positive number when Fixed amount is selected.';
+    }
 
-if ($postData['min_salary'] !== '' && $postData['max_salary'] !== '' && (float) $postData['max_salary'] < (float) $postData['min_salary']) {
-    $errors[] = 'Maximum salary cannot be lower than minimum salary.';
+    if (!in_array($postData['salary_period'], ['monthly', 'annual'], true)) {
+        $errors[] = 'Please select a valid salary period.';
+    }
+} else {
+    if ($postData['salary_amount'] !== '' && (!is_numeric($postData['salary_amount']) || (float) $postData['salary_amount'] < 0)) {
+        $errors[] = 'Salary amount must be a valid positive number when provided.';
+    }
+
+    if ($postData['salary_amount'] !== '' && !in_array($postData['salary_period'], ['monthly', 'annual'], true)) {
+        $errors[] = 'Salary period must be monthly or annual when a salary amount is provided.';
+    }
 }
 
 if ($postData['deadline'] === '' || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $postData['deadline']) || strtotime($postData['deadline']) === false || strtotime($postData['deadline']) < strtotime(date('Y-m-d'))) {
@@ -149,24 +193,20 @@ if (!$category) {
 }
 $categoryName = $category['category_name'] ?? '';
 
-$salaryParts = [];
-if ($postData['min_salary'] !== '') {
-    $salaryParts[] = $postData['min_salary'];
-}
-if ($postData['max_salary'] !== '') {
-    $salaryParts[] = $postData['max_salary'];
-}
-$salary = !empty($salaryParts) ? implode(' - ', $salaryParts) : '';
+$salaryDisplay = buildJobSalaryValue($postData['salary_type'], $postData['salary_amount'], $postData['salary_period']);
+$salaryType = normalizeSalaryType($postData['salary_type']);
+$salaryAmount = $postData['salary_type'] === 'fixed' ? $postData['salary_amount'] : '';
+$salaryPeriod = $postData['salary_type'] === 'fixed' ? $postData['salary_period'] : '';
 
 $conn->begin_transaction();
 
 try {
     $insertStmt = $conn->prepare(
-        'INSERT INTO jobs (company_id, category_id, title, description, requirements, location, employment_type, experience_level, work_mode, salary, vacancies, education_level, skills, responsibilities, benefits, deadline, status)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        'INSERT INTO jobs (company_id, category_id, title, description, requirements, location, employment_type, experience_level, work_mode, salary, salary_type, salary_amount, salary_period, vacancies, education_level, skills, responsibilities, benefits, deadline, status)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
     );
     $insertStmt->bind_param(
-        'iissssssssissssss',
+        'ii' . str_repeat('s', 11) . 'i' . str_repeat('s', 6),
         $companyId,
         $postData['category_id'],
         $postData['title'],
@@ -176,7 +216,10 @@ try {
         $postData['employment_type'],
         $postData['experience_level'],
         $postData['work_mode'],
-        $salary,
+        $salaryDisplay,
+        $salaryType,
+        $salaryAmount,
+        $salaryPeriod,
         $postData['vacancies'],
         $postData['education_level'],
         $postData['skills'],

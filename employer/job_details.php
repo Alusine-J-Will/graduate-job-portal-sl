@@ -125,7 +125,7 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                                     <div class="col-md-6"><strong>Work Mode:</strong> <?php echo htmlspecialchars($job['work_mode'] ?: 'Not provided'); ?></div>
                                     <div class="col-md-6"><strong>Experience Level:</strong> <?php echo htmlspecialchars($job['experience_level'] ?: 'Not provided'); ?></div>
                                     <div class="col-md-6"><strong>Education Level:</strong> <?php echo htmlspecialchars($job['education_level'] ?: 'Not provided'); ?></div>
-                                    <div class="col-md-6"><strong>Salary:</strong> <?php echo htmlspecialchars($job['salary'] ?: 'Not specified'); ?></div>
+                                    <div class="col-md-6"><strong>Salary:</strong> <?php echo htmlspecialchars(formatJobSalaryDisplay($job['salary'] ?? null, $job['salary_type'] ?? null, $job['salary_amount'] ?? null, $job['salary_period'] ?? null)); ?></div>
                                     <div class="col-md-6"><strong>Vacancies:</strong> <?php echo htmlspecialchars((string) ($job['vacancies'] ?? 'Not specified')); ?></div>
                                     <div class="col-md-6"><strong>Deadline:</strong> <?php echo !empty($job['deadline']) ? date('d M Y', strtotime($job['deadline'])) : 'Not specified'; ?></div>
                                     <div class="col-md-6"><strong>Date Posted:</strong> <?php echo !empty($job['created_at']) ? date('d M Y', strtotime($job['created_at'])) : 'Not available'; ?></div>

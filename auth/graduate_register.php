@@ -81,11 +81,11 @@ include '../includes/navbar.php';
                                 </div>
                                 <div class="invalid-feedback">Passwords do not match.</div>
                             </div>
-                            <div class="col-12">
+                                <div class="col-12">
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" id="terms" name="terms" required>
                                     <label class="form-check-label text-muted" for="terms">
-                                        I accept the terms and conditions.
+                                        I have read and agree to the <button type="button" class="btn btn-link p-0 align-baseline text-decoration-none" data-bs-toggle="modal" data-bs-target="#termsModal">GradConnect SL Terms &amp; Conditions</button> and <button type="button" class="btn btn-link p-0 align-baseline text-decoration-none" data-bs-toggle="modal" data-bs-target="#privacyModal">Privacy Notice</button>.
                                     </label>
                                     <div class="invalid-feedback">You must accept the terms to continue.</div>
                                 </div>
@@ -104,4 +104,13 @@ include '../includes/navbar.php';
     </div>
 </main>
 
+<?php include '../includes/legal_modals.php'; ?>
+<script src="<?php echo BASE_URL; ?>assets/js/register.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof initLegalModals === 'function') {
+            initLegalModals('graduate');
+        }
+    });
+</script>
 <?php include '../includes/footer.php'; ?>

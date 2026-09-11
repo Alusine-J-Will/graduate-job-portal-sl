@@ -19,7 +19,7 @@ $page = max(1, (int) ($_GET['page'] ?? 1));
 $perPage = 10;
 $offset = ($page - 1) * $perPage;
 
-$validStatuses = ['Pending', 'Reviewed', 'Shortlisted', 'Rejected', 'Accepted'];
+$validStatuses = ['pending', 'under_review', 'shortlisted', 'interview_scheduled', 'accepted', 'rejected'];
 $validDateFilters = ['today', 'last_7_days', 'last_30_days', 'this_month', 'this_year'];
 
 $whereClauses = ['1=1'];
@@ -36,9 +36,9 @@ if ($search !== '') {
     $types .= 'ssss';
 }
 
-if (in_array($statusFilter, $validStatuses, true)) {
+if (in_array(normalizeApplicationStatus($statusFilter), $validStatuses, true)) {
     $whereClauses[] = 'a.status = ?';
-    $params[] = $statusFilter;
+    $params[] = normalizeApplicationStatus($statusFilter);
     $types .= 's';
 }
 
@@ -131,12 +131,14 @@ $companiesStmt->close();
 
 function getApplicationStatusBadge(string $status): string
 {
+    $status = normalizeApplicationStatus($status);
     $badges = [
-        'Pending' => 'bg-warning text-dark',
-        'Reviewed' => 'bg-info text-dark',
-        'Shortlisted' => 'bg-primary',
-        'Rejected' => 'bg-danger',
-        'Accepted' => 'bg-success',
+        'pending' => 'bg-secondary',
+        'under_review' => 'bg-primary',
+        'shortlisted' => 'bg-info text-dark',
+        'interview_scheduled' => 'bg-warning text-dark',
+        'rejected' => 'bg-danger',
+        'accepted' => 'bg-success',
     ];
 
     return $badges[$status] ?? 'bg-secondary';
@@ -173,7 +175,7 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                         <select class="form-select" name="status">
                             <option value="">All</option>
                             <?php foreach ($validStatuses as $status): ?>
-                                <option value="<?php echo htmlspecialchars($status); ?>"<?php echo $statusFilter === $status ? ' selected' : ''; ?>><?php echo htmlspecialchars($status); ?></option>
+                                <option value="<?php echo htmlspecialchars($status); ?>"<?php echo normalizeApplicationStatus($statusFilter) === $status ? ' selected' : ''; ?>><?php echo htmlspecialchars(getApplicationStatusLabel($status)); ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -227,7 +229,7 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                                         <td><?php echo htmlspecialchars($application['graduate_name']); ?></td>
                                         <td><?php echo htmlspecialchars($application['job_title']); ?></td>
                                         <td><?php echo htmlspecialchars($application['company_name'] ?: 'N/A'); ?></td>
-                                        <td><span class="badge <?php echo getApplicationStatusBadge($application['status'] ?? 'Pending'); ?>"><?php echo htmlspecialchars($application['status'] ?? 'Pending'); ?></span></td>
+                                        <td><span class="badge <?php echo getApplicationStatusBadge($application['status'] ?? 'pending'); ?>"><?php echo htmlspecialchars(getApplicationStatusLabel($application['status'] ?? 'pending')); ?></span></td>
                                         <td><?php echo date('d M Y', strtotime($application['application_date'])); ?></td>
                                         <td>
                                             <a href="application_details.php?application_id=<?php echo (int) $application['application_id']; ?>" class="btn btn-sm btn-outline-custom">View</a>

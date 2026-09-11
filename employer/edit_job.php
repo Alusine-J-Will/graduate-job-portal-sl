@@ -29,7 +29,7 @@ if (!ctype_digit((string) $jobId)) {
 $jobId = (int) $jobId;
 
 $jobStmt = $conn->prepare(
-    'SELECT job_id, company_id, category_id, title, description, requirements, location, employment_type, experience_level, work_mode, salary, vacancies, education_level, skills, responsibilities, benefits, deadline, status
+    'SELECT job_id, company_id, category_id, title, description, requirements, location, employment_type, experience_level, work_mode, salary, salary_type, salary_amount, salary_period, vacancies, education_level, skills, responsibilities, benefits, deadline, status
      FROM jobs
      WHERE job_id = ? AND company_id = ?
      LIMIT 1'
@@ -58,12 +58,10 @@ if (!empty($formData)) {
     $job = array_merge($job, $formData);
 }
 
-$salaryParts = [];
-if (!empty($job['salary'])) {
-    $salaryParts = array_map('trim', preg_split('/\s*-\s*/', $job['salary'], -1, PREG_SPLIT_NO_EMPTY));
-}
-$salaryMin = $salaryParts[0] ?? '';
-$salaryMax = $salaryParts[1] ?? '';
+$salaryState = parseJobSalaryState($job['salary'] ?? null, $job['salary_type'] ?? null, $job['salary_amount'] ?? null, $job['salary_period'] ?? null);
+$job['salary_type'] = $salaryState['type'];
+$job['salary_amount'] = $salaryState['amount'];
+$job['salary_period'] = $salaryState['period'];
 
 $deadlineValue = !empty($job['deadline']) ? date('Y-m-d', strtotime($job['deadline'])) : '';
 
@@ -129,13 +127,32 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                             <label for="location" class="form-label fw-semibold">Job Location</label>
                             <input type="text" class="form-control" id="location" name="location" value="<?php echo htmlspecialchars($job['location'] ?? ''); ?>" required>
                         </div>
-                        <div class="col-md-3">
-                            <label for="min_salary" class="form-label fw-semibold">Minimum Salary</label>
-                            <input type="number" class="form-control" id="min_salary" name="min_salary" value="<?php echo htmlspecialchars($salaryMin); ?>" min="0" placeholder="Optional">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Salary / Compensation</label>
+                            <div class="d-flex flex-wrap gap-3 mt-2">
+                                <?php $salaryTypeOptions = ['negotiable' => 'Negotiable', 'competitive' => 'Competitive', 'not_disclosed' => 'Not disclosed', 'fixed' => 'Fixed amount']; $selectedSalaryType = isset($formData['salary_type']) ? $formData['salary_type'] : ($job['salary_type'] ?? 'negotiable'); foreach ($salaryTypeOptions as $value => $label): ?>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="salary_type" id="salary_type_<?php echo htmlspecialchars($value); ?>" value="<?php echo htmlspecialchars($value); ?>" <?php echo ($selectedSalaryType === $value) ? 'checked' : ''; ?>>
+                                        <label class="form-check-label" for="salary_type_<?php echo htmlspecialchars($value); ?>"><?php echo htmlspecialchars($label); ?></label>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
                         </div>
-                        <div class="col-md-3">
-                            <label for="max_salary" class="form-label fw-semibold">Maximum Salary</label>
-                            <input type="number" class="form-control" id="max_salary" name="max_salary" value="<?php echo htmlspecialchars($salaryMax); ?>" min="0" placeholder="Optional">
+                        <div class="col-md-6" id="salary-fixed-fields" style="display: none;">
+                            <div class="row g-3">
+                                <div class="col-md-7">
+                                    <label for="salary_amount" class="form-label fw-semibold">Salary Amount</label>
+                                    <input type="number" class="form-control" id="salary_amount" name="salary_amount" value="<?php echo htmlspecialchars(isset($formData['salary_amount']) ? $formData['salary_amount'] : ($job['salary_amount'] ?? '')); ?>" min="0" step="0.01" placeholder="e.g. 8000">
+                                </div>
+                                <div class="col-md-5">
+                                    <label for="salary_period" class="form-label fw-semibold">Salary Period</label>
+                                    <select class="form-select" id="salary_period" name="salary_period">
+                                        <option value="">Select</option>
+                                        <option value="monthly"<?php echo ((isset($formData['salary_period']) ? $formData['salary_period'] : ($job['salary_period'] ?? '')) === 'monthly') ? ' selected' : ''; ?>>Monthly</option>
+                                        <option value="annual"<?php echo ((isset($formData['salary_period']) ? $formData['salary_period'] : ($job['salary_period'] ?? '')) === 'annual') ? ' selected' : ''; ?>>Annual</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="col-md-6">
@@ -204,4 +221,39 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
     </div>
 </div>
 
+<script>
+(function () {
+    const fixedFields = document.getElementById('salary-fixed-fields');
+    const salaryInputs = document.querySelectorAll('input[name="salary_type"]');
+    const salaryAmount = document.getElementById('salary_amount');
+    const salaryPeriod = document.getElementById('salary_period');
+
+    function toggleSalaryFields() {
+        const selected = document.querySelector('input[name="salary_type"]:checked');
+        const isFixed = selected && selected.value === 'fixed';
+        if (!fixedFields) {
+            return;
+        }
+
+        fixedFields.style.display = isFixed ? 'block' : 'none';
+        if (salaryAmount) {
+            salaryAmount.disabled = !isFixed;
+            salaryAmount.required = isFixed;
+            if (!isFixed) {
+                salaryAmount.value = '';
+            }
+        }
+        if (salaryPeriod) {
+            salaryPeriod.disabled = !isFixed;
+            salaryPeriod.required = isFixed;
+            if (!isFixed) {
+                salaryPeriod.value = '';
+            }
+        }
+    }
+
+    salaryInputs.forEach((input) => input.addEventListener('change', toggleSalaryFields));
+    toggleSalaryFields();
+})();
+</script>
 <?php include __DIR__ . '/../includes/footer.php'; ?>

@@ -87,17 +87,47 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                                 <input type="hidden" name="application_id" value="<?php echo (int) $application['application_id']; ?>">
                                 <div class="mb-3">
                                     <label class="form-label fw-semibold">Current Status</label>
-                                    <select class="form-select" name="status">
-                                        <option value="Pending"<?php echo ($application['status'] ?? 'Pending') === 'Pending' ? ' selected' : ''; ?>>Pending</option>
-                                        <option value="Under Review"<?php echo ($application['status'] ?? 'Pending') === 'Under Review' ? ' selected' : ''; ?>>Under Review</option>
-                                        <option value="Shortlisted"<?php echo ($application['status'] ?? 'Pending') === 'Shortlisted' ? ' selected' : ''; ?>>Shortlisted</option>
-                                        <option value="Interview Scheduled"<?php echo ($application['status'] ?? 'Pending') === 'Interview Scheduled' ? ' selected' : ''; ?>>Interview Scheduled</option>
-                                        <option value="Accepted"<?php echo ($application['status'] ?? 'Pending') === 'Accepted' ? ' selected' : ''; ?>>Accepted</option>
-                                        <option value="Rejected"<?php echo ($application['status'] ?? 'Pending') === 'Rejected' ? ' selected' : ''; ?>>Rejected</option>
+                                    <select class="form-select" id="application_status" name="status">
+                                        <option value="pending"<?php echo normalizeApplicationStatus($application['status'] ?? 'pending') === 'pending' ? ' selected' : ''; ?>>Pending</option>
+                                        <option value="under_review"<?php echo normalizeApplicationStatus($application['status'] ?? 'pending') === 'under_review' ? ' selected' : ''; ?>>Under Review</option>
+                                        <option value="shortlisted"<?php echo normalizeApplicationStatus($application['status'] ?? 'pending') === 'shortlisted' ? ' selected' : ''; ?>>Shortlisted</option>
+                                        <option value="interview_scheduled"<?php echo normalizeApplicationStatus($application['status'] ?? 'pending') === 'interview_scheduled' ? ' selected' : ''; ?>>Interview Scheduled</option>
+                                        <option value="accepted"<?php echo normalizeApplicationStatus($application['status'] ?? 'pending') === 'accepted' ? ' selected' : ''; ?>>Accepted</option>
+                                        <option value="rejected"<?php echo normalizeApplicationStatus($application['status'] ?? 'pending') === 'rejected' ? ' selected' : ''; ?>>Rejected</option>
                                     </select>
+                                </div>
+                                <div class="row g-3 mb-3" id="interview-fields" hidden>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold" for="interview_date">Interview Date</label>
+                                        <input type="date" class="form-control" id="interview_date" name="interview_date" value="<?php echo htmlspecialchars($application['interview_date'] ?? ''); ?>" disabled>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold" for="interview_time">Interview Time</label>
+                                        <input type="time" class="form-control" id="interview_time" name="interview_time" value="<?php echo htmlspecialchars($application['interview_time'] ?? ''); ?>" disabled>
+                                    </div>
                                 </div>
                                 <button type="submit" class="btn btn-primary-custom">Update Status</button>
                             </form>
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function () {
+                                    const statusSelect = document.getElementById('application_status');
+                                    const interviewFields = document.getElementById('interview-fields');
+                                    const interviewDate = document.getElementById('interview_date');
+                                    const interviewTime = document.getElementById('interview_time');
+
+                                    function toggleInterviewFields() {
+                                        const isInterviewScheduled = statusSelect.value === 'interview_scheduled';
+                                        interviewFields.hidden = !isInterviewScheduled;
+                                        interviewDate.required = isInterviewScheduled;
+                                        interviewTime.required = isInterviewScheduled;
+                                        interviewDate.disabled = !isInterviewScheduled;
+                                        interviewTime.disabled = !isInterviewScheduled;
+                                    }
+
+                                    statusSelect.addEventListener('change', toggleInterviewFields);
+                                    toggleInterviewFields();
+                                });
+                            </script>
                         </div>
                     </div>
                 </div>

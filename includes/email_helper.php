@@ -131,20 +131,48 @@ if (!function_exists('sendApplicationEmail')) {
                 $message = 'A new application has been submitted for your job posting.';
                 break;
             case 'application_reviewed':
-                $subject = 'Application Reviewed';
-                $message = 'Your application has been reviewed.';
+            case 'application_under_review':
+                $subject = 'Your Job Application Is Under Review';
+                $message = sprintf(
+                    'Hello %s, your application is now under review by the employer.%s',
+                    $recipientName,
+                    !empty($data['job_title']) ? ' Job: ' . $data['job_title'] : ''
+                );
                 break;
             case 'application_shortlisted':
-                $subject = 'Application Shortlisted';
-                $message = 'Congratulations! Your application has been shortlisted.';
+                $subject = 'You Have Been Shortlisted';
+                $message = sprintf(
+                    'Congratulations %s! Your application has been shortlisted.%s',
+                    $recipientName,
+                    !empty($data['job_title']) ? ' Job: ' . $data['job_title'] : ''
+                );
+                break;
+            case 'application_interview_scheduled':
+                $subject = 'Interview Scheduled — ' . (!empty($data['job_title']) ? $data['job_title'] : 'Your Application');
+                $message = sprintf(
+                    'Hello %s, your interview for the %s position at %s has been scheduled. Interview Date: %s Interview Time: %s Please log in to GradConnect SL for more details.',
+                    $recipientName,
+                    $data['job_title'] ?? 'the advertised position',
+                    $data['company_name'] ?? 'the employer',
+                    $data['interview_date'] ?? 'To be confirmed',
+                    $data['interview_time'] ?? 'To be confirmed'
+                );
                 break;
             case 'application_accepted':
-                $subject = 'Application Accepted';
-                $message = 'Congratulations! Your application has been accepted.';
+                $subject = 'Your Job Application Has Been Accepted';
+                $message = sprintf(
+                    'Congratulations %s! Your application has been accepted.%s',
+                    $recipientName,
+                    !empty($data['job_title']) ? ' Job: ' . $data['job_title'] : ''
+                );
                 break;
             case 'application_rejected':
-                $subject = 'Application Update';
-                $message = 'Your application was not selected at this time.';
+                $subject = 'Update on Your Job Application';
+                $message = sprintf(
+                    'Hello %s, unfortunately your application was not selected at this time.%s',
+                    $recipientName,
+                    !empty($data['job_title']) ? ' Job: ' . $data['job_title'] : ''
+                );
                 break;
             case 'company_approved':
                 $subject = 'Company Verification Approved';

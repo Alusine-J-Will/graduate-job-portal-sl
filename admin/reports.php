@@ -59,11 +59,11 @@ $stats['draft_jobs'] = fetchCount($conn, "SELECT COUNT(*) FROM jobs WHERE status
 $stats['jobs_this_month'] = fetchCount($conn, "SELECT COUNT(*) FROM jobs WHERE YEAR(created_at) = YEAR(CURDATE()) AND MONTH(created_at) = MONTH(CURDATE())");
 
 $stats['total_applications'] = fetchCount($conn, 'SELECT COUNT(*) FROM applications');
-$stats['pending_applications'] = fetchCount($conn, "SELECT COUNT(*) FROM applications WHERE status = 'Submitted'");
-$stats['reviewed_applications'] = fetchCount($conn, "SELECT COUNT(*) FROM applications WHERE status IN ('Under Review', 'Interview')");
-$stats['shortlisted_applications'] = fetchCount($conn, "SELECT COUNT(*) FROM applications WHERE status = 'Shortlisted'");
-$stats['accepted_applications'] = fetchCount($conn, "SELECT COUNT(*) FROM applications WHERE status = 'Accepted'");
-$stats['rejected_applications'] = fetchCount($conn, "SELECT COUNT(*) FROM applications WHERE status = 'Rejected'");
+$stats['pending_applications'] = fetchCount($conn, "SELECT COUNT(*) FROM applications WHERE status = 'pending'");
+$stats['reviewed_applications'] = fetchCount($conn, "SELECT COUNT(*) FROM applications WHERE status IN ('under_review', 'interview_scheduled')");
+$stats['shortlisted_applications'] = fetchCount($conn, "SELECT COUNT(*) FROM applications WHERE status = 'shortlisted'");
+$stats['accepted_applications'] = fetchCount($conn, "SELECT COUNT(*) FROM applications WHERE status = 'accepted'");
+$stats['rejected_applications'] = fetchCount($conn, "SELECT COUNT(*) FROM applications WHERE status = 'rejected'");
 
 $stats['total_companies'] = fetchCount($conn, 'SELECT COUNT(*) FROM companies');
 $stats['approved_companies'] = fetchCount($conn, "SELECT COUNT(*) FROM companies WHERE verification_status = 'Approved'");
@@ -249,7 +249,7 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                 </div>
                 <div class="col-sm-6 col-xl-4">
                     <div class="card-ui p-4 bg-white h-100">
-                        <p class="text-uppercase small text-muted mb-2">Reviewed Applications</p>
+                        <p class="text-uppercase small text-muted mb-2">Under Review Applications</p>
                         <h2 class="h4 mb-0"><?php echo (int) $stats['reviewed_applications']; ?></h2>
                     </div>
                 </div>

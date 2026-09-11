@@ -88,6 +88,7 @@ if (!empty($errors)) {
 }
 
 $conn = $GLOBALS['conn'];
+ensureUserTermsAcceptanceFields($conn);
 
 $duplicateEmailStmt = $conn->prepare('SELECT user_id FROM users WHERE email = ? LIMIT 1');
 $duplicateEmailStmt->bind_param('s', $email);
@@ -125,11 +126,12 @@ $conn->begin_transaction();
 
 try {
     $userStmt = $conn->prepare(
-        'INSERT INTO users (full_name, email, phone, password, role, status, email_verified, email_verification_token, email_verification_expires, email_verification_sent_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?)'
+        'INSERT INTO users (full_name, email, phone, password, role, status, terms_accepted, terms_accepted_at, email_verified, email_verification_token, email_verification_expires, email_verification_sent_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?)'
     );
     $role = 'employer';
     $status = 'active';
-    $userStmt->bind_param('sssssssssss', $fullName, $email, $phone, $hashedPassword, $role, $status, $verificationTokenHash, $verificationExpires, $createdAt, $createdAt, $createdAt);
+    $termsAcceptedAt = date('Y-m-d H:i:s');
+    $userStmt->bind_param('ssssssissssss', $fullName, $email, $phone, $hashedPassword, $role, $status, $termsAccepted, $termsAcceptedAt, $verificationTokenHash, $verificationExpires, $createdAt, $createdAt, $createdAt, $createdAt);
     $userStmt->execute();
 
     if ($userStmt->affected_rows !== 1) {

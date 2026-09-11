@@ -241,7 +241,7 @@ include __DIR__ . '/../includes/dashboard_topbar.php';
                                     <div class="row g-3 mb-3">
                                         <div class="col-md-3"><strong>Type:</strong> <?php echo htmlspecialchars($job['employment_type'] ?: 'Not provided'); ?></div>
                                         <div class="col-md-3"><strong>Experience:</strong> <?php echo htmlspecialchars($job['experience_level'] ?: 'Not provided'); ?></div>
-                                        <div class="col-md-3"><strong>Salary:</strong> <?php echo htmlspecialchars($job['salary'] ?: 'Not specified'); ?></div>
+                                        <div class="col-md-3"><strong>Salary:</strong> <?php echo htmlspecialchars(formatJobSalaryDisplay($job['salary'] ?? null, $job['salary_type'] ?? null, $job['salary_amount'] ?? null, $job['salary_period'] ?? null)); ?></div>
                                         <div class="col-md-3"><strong>Location:</strong> <?php echo htmlspecialchars($job['location']); ?></div>
                                     </div>
 

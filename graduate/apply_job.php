@@ -110,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $conn->begin_transaction();
     try {
         $insertStmt = $conn->prepare('INSERT INTO applications (graduate_id, job_id, cv_path, cover_letter_path, cover_letter_text, status, application_date, updated_at) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())');
-        $status = 'Submitted';
+        $status = 'pending';
         $coverLetterPath = null;
         $coverLetterText = $coverLetter;
         $insertStmt->bind_param('iissss', $graduateId, $jobId, $cvPath, $coverLetterPath, $coverLetterText, $status);

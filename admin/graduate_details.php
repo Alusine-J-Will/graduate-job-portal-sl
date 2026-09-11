@@ -99,21 +99,21 @@ $countStmt->bind_result($totalApplications);
 $countStmt->fetch();
 $countStmt->close();
 
-$pendingStmt = $conn->prepare("SELECT COUNT(*) FROM applications WHERE graduate_id = ? AND status NOT IN ('Accepted','Rejected')");
+$pendingStmt = $conn->prepare("SELECT COUNT(*) FROM applications WHERE graduate_id = ? AND status NOT IN ('accepted','rejected')");
 $pendingStmt->bind_param('i', $graduate['graduate_id']);
 $pendingStmt->execute();
 $pendingStmt->bind_result($pendingApplications);
 $pendingStmt->fetch();
 $pendingStmt->close();
 
-$acceptedStmt = $conn->prepare("SELECT COUNT(*) FROM applications WHERE graduate_id = ? AND status = 'Accepted'");
+$acceptedStmt = $conn->prepare("SELECT COUNT(*) FROM applications WHERE graduate_id = ? AND status = 'accepted'");
 $acceptedStmt->bind_param('i', $graduate['graduate_id']);
 $acceptedStmt->execute();
 $acceptedStmt->bind_result($acceptedApplications);
 $acceptedStmt->fetch();
 $acceptedStmt->close();
 
-$rejectedStmt = $conn->prepare("SELECT COUNT(*) FROM applications WHERE graduate_id = ? AND status = 'Rejected'");
+$rejectedStmt = $conn->prepare("SELECT COUNT(*) FROM applications WHERE graduate_id = ? AND status = 'rejected'");
 $rejectedStmt->bind_param('i', $graduate['graduate_id']);
 $rejectedStmt->execute();
 $rejectedStmt->bind_result($rejectedApplications);
